@@ -1,0 +1,1113 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Identifier le titre ou billet" icon="pi pi-directions" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Enregistrer un billet" icon="pi pi-directions" class="p-button-success mr-2" (click)="openNew0()"></button>
+                    </div>
+                </ng-template>
+            </p-toolbar>
+
+            <div *ngIf="billets && billets.length > 0; else noBillets">
+                <p-table #dt [value]="billets" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                    
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th pSortableColumn="code">N° Billet <p-sortIcon field="code"></p-sortIcon></th>
+                            <th pSortableColumn="name">Prénom (s) <p-sortIcon field="name"></p-sortIcon></th>
+                            <th pSortableColumn="price">Nom <p-sortIcon field="price"></p-sortIcon></th>
+                            <th pSortableColumn="category">N° Pièce <p-sortIcon field="category"></p-sortIcon></th>
+                            <th></th>
+                            <th pSortableColumn="inventoryStatus">Etat actuel du billet <p-sortIcon field="inventoryStatus"></p-sortIcon></th>
+                        </tr>
+                    </ng-template>
+                    
+                    <ng-template pTemplate="body" let-billet>
+                        <tr>
+                            <td style="width:14%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                {{billet.bilCode}}
+                            </td>
+                            <td style="width:14%; min-width:10rem;">
+                                <span class="p-column-title">Prénom</span>
+                                {{billet.firstname}}
+                            </td>
+                            <td style="width:14%; min-width:10rem;"><span class="p-column-title">Nom</span>
+                                {{billet.lastname}}
+                            </td>
+                            <td style="width:14%; min-width:8rem;">
+                                {{billet.numeropiece}}
+                            </td>
+                            <td>
+                                <div class="flex">
+                                    <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-success mr-2 mb-2" (click)="editBillet(billet)"></button>
+                                    <button *ngIf="billet.bilEtat" pButton pRipple icon="pi pi-print" class="p-button-rounded p-button-warning mr-2 mb-2" (click)="printBillet(billet)">&nbsp;Imprimer</button>
+                                    <button *ngIf="billet.edit && billet.bilEtat" pButton pRipple icon="pi pi-user-edit" class="p-button-rounded p-button-primary mr-2 mb-2">&nbsp;Editer</button>
+                                    <button *ngIf="billet.remb && billet.bilEtat"  pButton pRipple icon="pi pi-wallet" class="p-button-rounded p-button-warning mr-2 mb-2" (click)="openNew2(billet)">&nbsp;Rembourser</button>
+                                    <button *ngIf="billet.bilEtat" pButton pRipple icon="pi pi-tags" class="p-button-rounded p-button-help mr-2 mb-2" (click)="openNew3(billet)">&nbsp;Reporter / Surclasser</button>
+                                </div>
+                            </td>
+                            <td style="width:14%; min-width:8rem;">
+                                
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            
+            <!-- Template à afficher si aucun billet n'est disponible -->
+            <ng-template #noBillets>
+                <div class="p-mt-4 p-text-center">
+                    <p>Aucun billet n'est disponible pour le titre sélectionné.</p>
+                </div>
+            </ng-template>
+            
+        </div>
+
+        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Saisir le code d'achat" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                
+                <div class="field">
+                    <label for="name">Code du titre de transport</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="codeAchat" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Afficher les billets" icon="pi pi-check" class="p-button-text" (click)="searchTitre()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="valideBillet" [style]="{width: '1250px'}" header="Fiche d'identification du billet" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                    <div class="grid">
+                        <div class="col-12 md:col-6">
+                            <div class="card p-fluid">
+                                <h5>Données du voyageur</h5>
+                                <div class="field">
+                                    <span id="billetCode">Numéro de billet : {{ billet.bilCode }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Prénom (s) du voyageur : {{ billet.firstname }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Nom du voyageur : {{ billet.lastname }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Contact : {{ billet.phone }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Identification Nationale : {{ billet.numeropiece }}</span>
+                                </div>
+                    
+                            </div>
+                            
+                            <div class="card p-fluid">
+                                <h5>Informations du bébé</h5>
+                                <div class="p-formgrid grid">
+                                    <div class="field col">
+                                        <span id="billetCode">Nom complet : {{ billet.enfantDTOS.enfNomComplet || "Aucun bébé" }}</span>
+                                    </div>
+                                    <div class="field col">
+                                        <span id="billetCode">Age : {{ billet.enfantDTOS.enfAge + " " + billet.enfantDTOS.uniteTemps || "Pas d'age" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="col-12 md:col-6">
+                            <div class="card p-fluid">
+                                <h5>Informations de voyage</h5>
+                                <div class="field grid">
+                                    <div class="col-12 md:col-10">
+                                        <span id="billetCode">Bateau : {{ billet.voyageDTO.bat_id }}</span>
+                                    </div>
+                                </div>
+                                <div class="field grid">
+                                    <div class="col-12 md:col-10">
+                                        <span id="billetCode">Date de départ : {{ billet.voyageDTO.voy_datedpt }}</span>
+                                    </div>
+                                </div>
+                                <div class="field grid">
+                                    <div class="col-12 md:col-10">
+                                        <span id="billetCode">Destination : {{ billet.voyageDTO.voy_destination }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <div class="card p-fluid">
+                                <h5>Informations de tarification</h5>
+                                <div class="field">
+                                    <span id="billetCode">Place : {{ billet.typePlaceId }} - {{ billet.plcId }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Critères :
+                                        <span *ngFor="let critere of billet.critereIds">
+                                        {{ critere.crt_nom }}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Prix TTC : {{ billet.bilPtt }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Emission : {{ billet.bilDateEmission }} - Invalidité : {{ billet.bilDateValidite }}</span>
+                                </div>
+                   
+                            </div>
+                        </div>
+                    
+                    </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Ok" icon="pi pi-check" class="p-button-text" (click)="validateBillet()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="outBillet" [style]="{width: '350px'}" header="Impression du billet" [closable]="false" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="left">
+                <div id="ticket-content">
+                    <table width="225px" padding="0px">
+                        <!-- En-tête du billet -->
+                        <tr>
+                            <td style="padding:0px; text-align: center; ">
+                                <img [src]="qrCodeUrl" alt="QR Code"/><br/>
+                                <span style="font-size:20px">
+                                    <strong>
+                                        {{ billet.voyageDTO.code_voyage }} / {{ billet.bilCode }}
+                                    </strong>
+                                </span><br/>
+                                <span style="font-size:12px">
+                                    Émis le : {{ currentDate | date:'dd/MM/yyyy HH:mm' }}<br/>  
+                                    Par : {{this.sigle}}/{{this.user}}<br/> 
+                                </span>         
+                            </td>
+                        </tr>
+                      
+                        <!-- Informations de trajet -->
+                        <tr>
+                            <td style="padding-top: 2px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">De (<em>From</em>) - A (<em>To</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px">
+                                            <strong>
+                                                <ng-container *ngIf="billet.voyageDTO.voy_depart === 2 && hasCritere(19, billet); else loginTemplate">
+                                                    Carabane
+                                                  </ng-container>
+                                                  <ng-template #loginTemplate>
+                                                    {{ getVille(billet.voyageDTO.voy_depart) }}
+                                                  </ng-template>
+                                                  -
+                                                  <ng-container *ngIf="billet.voyageDTO.voy_destination === 2 && hasCritere(19, billet); else loginTemplate2">
+                                                    Carabane
+                                                  </ng-container>
+                                                  <ng-template #loginTemplate2>
+                                                    {{ getVille2(billet.voyageDTO.voy_destination) }}
+                                                  </ng-template>
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>    
+                            </td>
+                        </tr>
+                        <!-- Bateau et départ -->
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Opéré par (<em>Boat</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px">
+                                            <strong>
+                                                {{ getBateau(billet.voyageDTO.bat_id) }}
+                                            </strong>
+                                        </span>
+                                    </div>     
+                                </div>
+                            </td>
+                        </tr>                      
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Départ - Heure (<em>Departure - At</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px"> 
+                                            <strong>{{ billet.voyageDTO.voy_datedpt | date:'dd/MM/yyyy' }} - </strong>
+                                            <ng-container *ngIf="billet.voyageDTO.voy_depart === 1; else loginTemplate4">
+                                                <span><strong>19:00</strong></span>
+                                              </ng-container>
+                                              
+                                              <ng-template #loginTemplate4>
+                                                <span><strong>13:00</strong></span>
+                                              </ng-template>
+                                         
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>                   
+                        <!-- Embarquement -->
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Embarquement <em>(Boarding)</em> :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px"> 
+                                            <ng-container *ngIf="billet.voyageDTO.voy_depart === 1; else loginTemplate5">
+                                                <span><strong>15:00 - 18:00</strong></span>
+                                              </ng-container>
+                                              
+                                              <ng-template #loginTemplate5>
+                                                <span><strong>09:00 - 12:00</strong></span>
+                                              </ng-template>
+                                        </span>
+                                    </div>
+                                    
+                                </div>
+                            </td>
+                        </tr>                      
+                        <!-- Nom du passager -->
+                        <tr>
+                            <td style="padding-top: 0px; text-align: center">
+                                    <span style="font-size:20px">
+                                        <strong>
+                                            {{ billet.lastname }} / {{ billet.firstname }}
+                                        </strong>
+                                    </span>
+                                    <br><span>
+                                        <strong>{{getTypePiece(billet.typePieceId)}} N° : {{ billet.numeropiece }}</strong></span>
+                                    <ng-container *ngIf="billet.enfantDTOS?.enfNomComplet; else loginTemplate6">
+                                        <br><span style="font-size:12px">+ 1 BEBE : {{billet.enfantDTOS.enfNomComplet}} {{billet.enfantDTOS.enfAge + " " + billet.enfantDTOS.uniteTemps}}</span>
+                                      </ng-container>
+                                      
+                                      <ng-template #loginTemplate6>
+                                        <br><span style="font-size:12px">0 BEBE</span>
+                                      </ng-template>
+                            </td>
+                        </tr>
+                      
+                        <!-- Type et numéro de place -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div>{{ getTypePlaceLabel(billet.typePlaceId) }} - Place :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:20px"><strong>{{ getPlaceLabel(billet.plcId) }}</strong></span>
+                                    </div>
+                                </div>  
+                            </td>
+                        </tr>
+                      
+                        <!-- Prix -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <strong>Prix TTC : {{billet.bilPtt}} FCFA</strong>
+                                </div>
+                                
+                            </td>
+                        </tr>
+                    
+                        <!-- Message de fin -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div>
+                                    <div style="text-align: center; font-size:12px">
+                                        <p><em>COSAMA, Voyagez en toute sérénité !</em></p>
+                                    </div>        
+                                </div>
+                            </td>
+                        </tr>
+                    </table>   
+                </div>
+            
+                <!-- Bouton pour imprimer uniquement le ticket -->
+                </ng-template>            
+            
+            <ng-template pTemplate="footer">
+                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printTicket()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="outBillet2" [style]="{width: '350px'}" header="Impression du billet de remboursement" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="left">
+                <div id="ticket-content">
+                    <table width="225px" padding="0px">
+                        <!-- Informations de trajet -->
+                        <tr>
+                            <td style="padding:0px; text-align: center; ">
+                                <strong>REMBOURSEMENT</strong><br/>
+                                <span style="font-size:10px">
+                                    Pour le billet : {{ billet.bilCode }}<br/>
+                                    Du voyage : {{ billet.voyageDTO.code_voyage }}<br/>
+                                </span>
+                                <span style="font-size:10px">
+                                    Qui a été émis le : {{ billet.bilDateEmission | date:'dd/MM/yyyy HH:mm' }}<br/>  
+                                    Par : {{this.sigle}} / {{this.user}}<br/> 
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top: 2px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">De (<em>From</em>) - A (<em>To</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px">
+                                            <strong>
+                                                <ng-container *ngIf="billet.voyageDTO.voy_depart === 2 && hasCritere(19, billet); else loginTemplate">
+                                                    Carabane
+                                                  </ng-container>
+                                                  <ng-template #loginTemplate>
+                                                    {{ getVille(billet.voyageDTO.voy_depart) }}
+                                                  </ng-template>
+                                                  -
+                                                  <ng-container *ngIf="billet.voyageDTO.voy_destination === 2 && hasCritere(19, billet); else loginTemplate2">
+                                                    Carabane
+                                                  </ng-container>
+                                                  <ng-template #loginTemplate2>
+                                                    {{ getVille2(billet.voyageDTO.voy_destination) }}
+                                                  </ng-template>
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>    
+                            </td>
+                        </tr>
+                        <!-- Bateau et départ -->
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Opéré par (<em>Boat</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px">
+                                            <strong>
+                                                {{ getBateau(billet.voyageDTO.bat_id) }}
+                                            </strong>
+                                        </span>
+                                    </div>     
+                                </div>
+                            </td>
+                        </tr>                      
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Départ - Heure (<em>Departure - At</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px"> 
+                                            <strong>{{ billet.voyageDTO.voy_datedpt | date:'dd/MM/yyyy' }} - </strong>
+                                            <ng-container *ngIf="billet.voyageDTO.voy_depart === 1; else loginTemplate4">
+                                                <span><strong>19:00</strong></span>
+                                              </ng-container>
+                                              
+                                              <ng-template #loginTemplate4>
+                                                <span><strong>13:00</strong></span>
+                                              </ng-template>
+                                         
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>                   
+                        <!-- Embarquement -->
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Embarquement <em>(Boarding)</em> :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px"> 
+                                            <ng-container *ngIf="billet.voyageDTO.voy_depart === 1; else loginTemplate5">
+                                                <span><strong>15:00 - 18:00</strong></span>
+                                              </ng-container>
+                                              
+                                              <ng-template #loginTemplate5>
+                                                <span><strong>09:00 - 12:00</strong></span>
+                                              </ng-template>
+                                        </span>
+                                    </div>
+                                    
+                                </div>
+                            </td>
+                        </tr>                      
+                        <!-- Nom du passager -->
+                        <tr>
+                            <td style="padding-top: 0px; text-align: center">
+                                    <span style="font-size:20px">
+                                        <strong>
+                                            {{ billet.lastname }} / {{ billet.firstname }}
+                                        </strong>
+                                    </span>
+                                    <br><span>
+                                        <strong>{{getTypePiece(billet.typePieceId)}} N° : {{ billet.numeropiece }}</strong></span>
+                                    <ng-container *ngIf="billet.enfantDTOS?.enfNomComplet; else loginTemplate6">
+                                        <br><span style="font-size:12px">+ 1 BEBE : {{billet.enfantDTOS.enfNomComplet}} {{billet.enfantDTOS.enfAge + " " + billet.enfantDTOS.uniteTemps}}</span>
+                                      </ng-container>
+                                      
+                                      <ng-template #loginTemplate6>
+                                        <br><span style="font-size:12px">0 BEBE</span>
+                                      </ng-template>
+                            </td>
+                        </tr>
+                      
+                        <!-- Type et numéro de place -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div>{{ getTypePlaceLabel(billet.typePlaceId) }} - Place :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:20px"><strong>{{ getPlaceLabel(billet.plcId) }}</strong></span>
+                                    </div>
+                                </div>  
+                            </td>
+                        </tr>
+                      
+                        <!-- Prix -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <strong>Prix TTC : {{billet.bilPtt}} FCFA</strong>
+                                </div>
+                                
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div>
+                                    <div style="text-align: center; font-size:14px">
+                                        <p>
+                                            <em>-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-</em><br/>
+                                            <em>Détails du remboursement</em><br/>
+                                            Pénalité {{"(" + billet.bilPenalite + "%)"}} : 
+                                            <strong>{{- (billet.bilPtt * ((billet.bilPenalite) / 100.0)) | number:'1.2-2' }} FCFA</strong>
+                                            <br/>
+                                            Montant Remboursé :
+                                            <strong [ngStyle]="{ 'background-color': '#f0f0f0', 'padding': '5px', 'border-radius': '4px' }">
+                                                {{ billet.mtnRembours }} FCFA
+                                            </strong><br/>
+                                            <span style="font-size:10px">
+                                                Effectué le : {{ billet.dateRembours | date:'dd/MM/yyyy HH:mm' }} - par : {{ billet.userRembours }}
+                                            </span>
+                                        </p>
+                                    </div>        
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Message de fin -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div>
+                                    <div style="text-align: center; font-size:12px">
+                                        <p><em>COSAMA vous remercie pour la confiance !</em></p>
+                                    </div>        
+                                </div>
+                            </td>
+                        </tr>
+                    </table>   
+                </div>
+            
+                <!-- Bouton pour imprimer uniquement le ticket -->
+                </ng-template>            
+            
+            <ng-template pTemplate="footer">
+                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printTicket()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="outBillet3" [style]="{width: '350px'}" header="Impression du billet surclassé" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="left">
+                <div id="ticket-content">
+                    <table width="225px" padding="0px">
+                        <!-- En-tête du billet -->
+                        <tr>
+                            <td style="padding:0px; text-align: center; ">
+                                <span>{{billet.code_achat}}</span><br/>
+                                <img [src]="qrCodeUrl" alt="QR Code"/><br/>
+                                <span style="font-size:20px">
+                                    <strong>
+                                        {{ billet.voyageDTO.code_voyage }} / {{ billet.bilCode }}
+                                    </strong>
+                                </span><br/>
+                                <span style="font-size:12px">
+                                    Émis le : {{ currentDate | date:'dd/MM/yyyy HH:mm' }}<br/>  
+                                    Par : {{this.sigle}}/{{this.user}}<br/> 
+                                </span>         
+                            </td>
+                        </tr>
+                      
+                        <!-- Informations de trajet -->
+                        <tr>
+                            <td style="padding-top: 2px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">De (<em>From</em>) - A (<em>To</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px">
+                                            <strong>
+                                                <ng-container *ngIf="billet.voyageDTO.voy_depart === 2 && hasCritere(19, billet); else loginTemplate">
+                                                    Carabane
+                                                  </ng-container>
+                                                  <ng-template #loginTemplate>
+                                                    {{ getVille(billet.voyageDTO.voy_depart) }}
+                                                  </ng-template>
+                                                  -
+                                                  <ng-container *ngIf="billet.voyageDTO.voy_destination === 2 && hasCritere(19, billet); else loginTemplate2">
+                                                    Carabane
+                                                  </ng-container>
+                                                  <ng-template #loginTemplate2>
+                                                    {{ getVille2(billet.voyageDTO.voy_destination) }}
+                                                  </ng-template>
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>    
+                            </td>
+                        </tr>
+                        <!-- Bateau et départ -->
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Opéré par (<em>Boat</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px">
+                                            <strong>
+                                                {{ getBateau(billet.voyageDTO.bat_id) }}
+                                            </strong>
+                                        </span>
+                                    </div>     
+                                </div>
+                            </td>
+                        </tr>                      
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Départ - Heure (<em>Departure - At</em>) :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px"> 
+                                            <strong>{{ billet.voyageDTO.voy_datedpt | date:'dd/MM/yyyy' }} - </strong>
+                                            <ng-container *ngIf="billet.voyageDTO.voy_depart === 1; else loginTemplate4">
+                                                <span><strong>19:00</strong></span>
+                                              </ng-container>
+                                              
+                                              <ng-template #loginTemplate4>
+                                                <span><strong>13:00</strong></span>
+                                              </ng-template>
+                                         
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>                   
+                        <!-- Embarquement -->
+                        <tr>
+                            <td align="left" style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div align="left" style="font-size:12px">Embarquement <em>(Boarding)</em> :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:18px"> 
+                                            <ng-container *ngIf="billet.voyageDTO.voy_depart === 1; else loginTemplate5">
+                                                <span><strong>15:00 - 18:00</strong></span>
+                                              </ng-container>
+                                              
+                                              <ng-template #loginTemplate5>
+                                                <span><strong>09:00 - 12:00</strong></span>
+                                              </ng-template>
+                                        </span>
+                                    </div>
+                                    
+                                </div>
+                            </td>
+                        </tr>                      
+                        <!-- Nom du passager -->
+                        <tr>
+                            <td style="padding-top: 0px; text-align: center">
+                                    <span style="font-size:20px">
+                                        <strong>
+                                            {{ billet.lastname }} / {{ billet.firstname }}
+                                        </strong>
+                                    </span>
+                                    <br><span>
+                                        <strong>{{getTypePiece(billet.typePieceId)}} N° : {{ billet.numeropiece }}</strong></span>
+                                    <ng-container *ngIf="billet.enfantDTOS?.enfNomComplet; else loginTemplate6">
+                                        <br><span style="font-size:12px">+ 1 BEBE : {{billet.enfantDTOS.enfNomComplet}} {{billet.enfantDTOS.enfAge + " " + billet.enfantDTOS.uniteTemps}}</span>
+                                      </ng-container>
+                                      
+                                      <ng-template #loginTemplate6>
+                                        <br><span style="font-size:12px">0 BEBE</span>
+                                      </ng-template>
+                            </td>
+                        </tr>
+                      
+                        <!-- Type et numéro de place -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <div>{{ getTypePlaceLabel(billet.typePlaceId) }} - Place :</div>
+                                    <div style="border: 1px solid black; border:inset">
+                                        <span style="font-size:20px"><strong>{{ getPlaceLabel(billet.plcId) }}</strong></span>
+                                    </div>
+                                </div>  
+                            </td>
+                        </tr>
+                      
+                        <!-- Prix -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div style="text-align: center;">
+                                    <strong>Prix TTC : {{billet.bilPtt}} FCFA</strong>
+                                </div>
+                                
+                            </td>
+                        </tr>
+                    
+                        <!-- Message de fin -->
+                        <tr>
+                            <td style="padding-top: 0px;">
+                                <div>
+                                    <div style="text-align: center; font-size:12px">
+                                        <p><em>COSAMA, Voyagez en toute sérénité !</em></p>
+                                    </div>        
+                                </div>
+                            </td>
+                        </tr>
+                    </table>   
+                </div>
+            
+                <!-- Bouton pour imprimer uniquement le ticket -->
+                </ng-template>            
+            
+            <ng-template pTemplate="footer">
+                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printTicket()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog2" [style]="{width: '450px'}" header="Veuillez preciser le motif du remboursement" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="name">Renseignez le motif du remboursement</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="motif" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="name">Taux de remboursement en %</label>
+                    <p-inputNumber inputId="tauxRemb"  [(ngModel)]="penality" suffix="%" mode="decimal" [showButtons]="true" [min]="0" [max]="100">
+                    </p-inputNumber>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Effectuer" icon="pi pi-check" class="p-button-text" (click)="rembourser()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog3" [style]="{width: '1000px'}" header="Report / Surclassement" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="grid">
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <h5>Données du voyageur</h5>
+                            <div class="field">
+                                <span id="billetCode">N° de billet : {{ billet.bilCode }}</span><br/>
+                                <span id="billetCode">Prénom (s) du voyageur : {{ billet.firstname }}</span><br/>
+                                <span id="billetCode">Nom du voyageur : {{ billet.lastname }}</span><br/>
+                                <span id="billetCode">Contact : {{ billet.phone }}</span><br/>
+                                <span id="billetCode">Identification Nationale : {{ billet.numeropiece }}</span><br/>
+                                <span id="billetCode">Place : {{ billet.typePlaceId }} - {{ billet.plcId }}</span>
+                            </div>
+                
+                        </div>
+                        
+                        <div class="card p-fluid">
+                            <h5>Informations du bébé</h5>
+                            <div class="p-formgrid grid">
+                                <div class="field col">
+                                    <span id="billetCode">Nom complet : {{ billet.enfantDTOS?.enfNomComplet || "Aucun bébé" }}</span>
+                                </div>
+                                <div class="field col">
+                                    <span id="billetCode">Age : {{ billet.enfantDTOS?.enfAge + " " + billet.enfantDTOS?.uniteTemps || "Pas d'age" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-6">
+                        <table>
+                            <tr>
+                              <td>
+                                <label for="status" style="margin-right: 15px;">Voyage : </label>
+                              </td>
+                              <td>
+                                <p-dropdown (onChange)="onDropdownChange_()" [(ngModel)]="selectedVoyage" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body" [showClear]="true">
+                                    <ng-template let-voyage pTemplate="item">
+                                        <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                              </td>
+                            </tr>
+             
+                            <tr>
+                                <td style="padding: 4px 0;"></td>
+                                <td style="padding: 4px 0;">
+                                    <span [ngClass]="{
+                                        'label-surclass': isSurclassement,
+                                        'label-report': isReport
+                                    }" style="font-size: 15px;">
+                                    <strong>{{ situation }}</strong>
+                                    </span>
+                                </td>
+                                </tr>
+                            <tr>
+                              <td>
+                                <label for="status" style="margin-right: 15px;">Type Place : </label>
+                              </td>
+                              <td>
+                                <p-dropdown (onChange)="onDropdownChange()" [(ngModel)]="selectedTypePlace" optionValue="tplc_id" optionLabel="tplc_nom" [options]="filteredTypePlaces" placeholder="Sélectionner un type de place" [showClear]="true">
+                                    <ng-template let-typePlace pTemplate="item">
+                                        <span>{{typePlace.tplc_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <label for="status" style="margin-right: 15px;">Selectionner Place : </label>
+                              </td>
+                              <td>             
+                                    <p-listbox [options]="sourcePlaces" [(ngModel)]="selectedPlaces" [listStyle]="{ 'max-height': '15rem' }">
+                                        <ng-template let-place pTemplate="item">
+                                          <div style="margin-right: 3px; margin-bottom: 1px;">
+                                              <p-tag 
+                                                  icon="pi pi-info-circle" [value]="place.plc_code">
+                                              </p-tag>
+                                          </div>
+                                        </ng-template>
+                                    </p-listbox>
+                              </td>
+                            </tr>
+                            <!-- <tr>
+                              <td>
+                                <label for="status" style="margin-right: 15px;">Paiement : </label>
+                              </td>
+                              <td>
+                                <p-dropdown [options]="" optionLabel="label" optionValue="value" placeholder="Mode de paiement" [showClear]="true">
+                                  <ng-template let-option pTemplate="item">
+                                    <span [class]="'product-badge status-' + option.value">{{option.label}}</span>
+                                  </ng-template>
+                                </p-dropdown>
+                              </td>
+                            </tr> -->
+                        </table>
+                    </div>
+                </div>                                                                
+              </ng-template>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveReportSU(billet)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog4" [style]="{width: '1050px'}" header="Choisir un voyage pour enregistrer le billet" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div class="col-8">
+                                    <h5>Planning des voyages</h5>
+                                    <full-calendar [options]="options"></full-calendar>
+                                </div>
+                                <div class="col-4">
+                                    <h5>Légende</h5>
+                                    <p-table #dt [value]="results" [rows]="10" styleClass="p-datatable-gridlines">
+                                        <ng-template pTemplate="header">
+                                            <tr>
+                                                <th pSortableColumn="code">Code couleur</th>
+                                                <th pSortableColumn="name">Bateau</th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-result>
+                                            <tr>
+                                                <td style="width:15%;" [ngStyle]="{ 'background-color': result.bat_markeur, 
+                                                    'width': '30px', 'height': '30px', 'border-radius': '50%', 'display': 'inline-block'
+                                                  }">
+                                              </td>
+                                                                              
+                                                <td style="width:60%;">
+                                                    {{result.bat_nom}}
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            </div>
+                            
+                            <p-dialog [(visible)]="eventDialog" [style]="{width: '1500px'}" header="Etat des places pour le voyage" [modal]="true" position="top" class="">
+                                <ng-template pTemplate="content">
+                                  <div class="grid">
+                                    <p-tabView>
+                                        <div class="legend-container">
+                                            <p-badge [value]="getBadgeNumber(1)" [severity]="getSeverity(1)" class="mr-2"></p-badge> Chaise
+                                            <p-badge [value]="getBadgeNumber(2)" [severity]="getSeverity(2)" class="mr-2"></p-badge> Cabine à 2 places
+                                            <p-badge [value]="getBadgeNumber(3)" [severity]="getSeverity(3)" class="mr-2"></p-badge> Cabine à 4 places
+                                            <p-badge [value]="getBadgeNumber(4)" [severity]="getSeverity(4)" class="mr-2"></p-badge> Cabine à 8 places
+                                            
+                                            <div [ngClass]="['color-indicator', getColorClass('H')]" class="mr-1"></div> Place Homme
+                                            <div [ngClass]="['color-indicator', getColorClass('F')]" class="mr-1"></div> Place Femme
+                                            <div [ngClass]="['color-indicator', getColorClass('M')]" class="mr-1"></div> Place Mixte
+                                        </div>
+                                        
+                                      <br/>
+                                      <p-tabPanel *ngFor="let section of sections" [header]="section.nivNom">
+                                        <div class="place-buttons">
+                                          <div class="button-row" *ngFor="let place of section.places; let i = index">
+                                            <p-button (click)="!place.disabled && !place.alreadyInVoyage" [styleClass]="getButtonClass(place)">
+                                              <div class="button-content">
+                                                <p-badge [value]="getBadgeNumber(place.typePlace)" 
+                                                [severity]="getSeverity(place.typePlace)" 
+                                                styleClass="mr-2">
+                                              </p-badge>
+                                                <img [src]="getIcon(place.typePlace)" alt="{{place.plcCode}} icon" class="icon-svg"/>
+                                                <span>{{ place.plcCode }}</span>
+                                                    <div 
+                                                      [ngClass]="['color-indicator', getColorClass(place.sexe), 'ml-2']">
+                                                    </div>
+                                              </div>
+                                            </p-button>
+                                          </div>
+                                        </div>
+                                        
+                                      </p-tabPanel>
+                                    </p-tabView>
+                              
+                                  </div>             
+                                </ng-template>
+                            </p-dialog>
+                        </div>
+                    </div>
+                </div>
+                
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+               
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="passagerDialog" [style]="{width: '450px'}" header="Enregistrement du billet" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Nationalité</label>
+                  <p-dropdown 
+                    [options]="countries" 
+                    [(ngModel)]="passager.natId" 
+                    name="selectedCountry"
+                    optionLabel="name"
+                    optionValue="natId"
+                    [filter]="true"
+                    filterBy="name"
+                    placeholder="Votre nationalité" appendTo="body">
+                    <ng-template let-country pTemplate="item">
+                      <div class="country-item">
+                        <img [src]="'https://flagcdn.com/16x12/' + country.code.toLowerCase() + '.png'" alt="{{country.name}}" width="16" style="margin-right: 8px;"/>
+                        <span>{{country.name}}</span>
+                      </div>
+                    </ng-template>
+                  </p-dropdown>
+                </div>
+            
+              </div>
+
+                <div class="formgrid grid">
+                  <div class="field col">
+                    <label for="status">Type de pièce</label>
+                    <p-dropdown [options]="typePieces_" id="typePiecesOption" optionValue="tpiece_id" optionLabel="tpiece_nom" placeholder="Votre type de pièce" [showClear]="true" [(ngModel)]="passager.typePiece" appendTo="body">
+                      <ng-template let-option pTemplate="item">
+                        <span [class]="'product-badge status-' + option.tpiece_id">{{option.tpiece_nom}}</span>
+                    </ng-template>
+                    </p-dropdown>
+                </div>
+                <div class="field col" *ngIf="passager.typePiece">
+                  <label for="name">Numéro de pièces</label>
+                  <input type="text" (input)="searchPassager()" [(ngModel)]="numPiecePassager" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Numéro de piece obligatoire</small>
+                </div>
+
+                </div>
+                <div class="formgrid grid">
+                  <div class="field col">
+                    <label for="status">Civilité</label>
+                    <p-dropdown [options]="civilities" [(ngModel)]="passager.civilite" optionLabel="label" optionValue="value" placeholder="Votre civilité" [showClear]="true" appendTo="body">
+                      <ng-template let-option pTemplate="item">
+                        <span [class]="'product-badge status-' + option.value">{{option.label}}</span>
+                    </ng-template>
+                    </p-dropdown>
+                  </div>
+                </div>
+                  
+                <div class="formgrid grid">
+                  <div class="field col">
+                    <label for="name">Prénom (s)</label>
+                    <input type="text" pInputText id="firstname" [(ngModel)]="passager.firstName" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.firstname}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.firstName">Name is required.</small>
+                </div>
+                <div class="field col">
+                  <label for="name">Nom</label>
+                    <input type="text" pInputText id="lastname" [(ngModel)]="passager.lastName" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.lastname}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.lastName">Name is required.</small>
+                </div>
+
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="field col">
+                      <label for="calendar">Date de naissance : </label>
+                      <span *ngIf="selectedDate3">{{ selectedDate3 | date:'dd/MM/yyyy' }}</span>
+                      <p-calendar name="selectedDate3" 
+                                  dateFormat="dd/mm/yy" 
+                                  [(ngModel)]="selectedDate3" 
+                                  [showIcon]="true" 
+                                  inline="true" styleClass="small-datepicker">
+                      </p-calendar>
+                    </div>
+                 </div>
+                              
+              
+              <div class="formgrid grid">  
+                  <div class="field col">
+                    <label for="name">Téléphone</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="passager.phone" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.phone}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.phone">Numéro de téléphone obligatoire.</small>
+                  </div>
+                          
+              </div>
+
+              <label for="name" style="color: red;">
+                Afin de prévenir toute erreur susceptible d’entraîner une perte financière, veuillez saisir la suite dans l’ordre indiqué.
+              </label>
+              <div *ngFor="let groupe of groupesCriteres; let i = index" class="field">
+                <label [for]="'groupe' + i"><b>{{ groupe.grpcrt_nom }}</b></label>
+                <p-dropdown [options]="filterOptions(groupe)" [(ngModel)]="passager.billetsDTOS.criteres[i]" 
+                optionLabel="crt_nom"
+                placeholder="Votre critère"
+                [showClear]="true"
+                (onChange)="updateSelectedCriteres()" appendTo="body">
+                <ng-template let-option pTemplate="item">
+                  <span>{{ option.crt_nom }}</span>
+                </ng-template>
+              </p-dropdown>
+
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Type de place</label>
+                      <p-dropdown [options]="typePlaces" name="typePlacesOption" [(ngModel)]="passager.typePlace" optionValue="tplc_id" optionLabel="tplc_nom" placeholder="Votre type de place" [showClear]="true" (onChange)="obtTypePlace()" appendTo="body">
+                        <ng-template let-option pTemplate="item">
+                          <span [class]="'product-badge status-' + option.tplc_id">{{option.tplc_nom}}</span>
+                      </ng-template>
+                      </p-dropdown>
+                </div>
+                <div class="field col">
+                  <label for="name">Place</label>
+                  <div class="p-inputgroup">
+                    <input type="text" readOnly [(ngModel)]="passager.nomPlace" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                    <button pButton type="button" icon="pi pi-user-plus" (click)="placeCheck()" class="p-button-success"></button>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+                                        
+
+                <div class="grid" *ngIf="this.age >= 12">
+                  <div class="col-12 md:col-6">
+                      <h6>Bébé ?</h6>
+                      <div class="grid">
+                          <div class="col-12">
+                              <p-selectButton [options]="enfOptions" optionLabel="name" (onChange)="onCheckChange($event)">
+                              </p-selectButton>
+                          </div>
+                        </div>
+                      </div>              
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="col-12" *ngIf="this.passager.valCheck === 1">
+                        <h6>Date de naissance du bébé</h6>
+                        <span *ngIf="ageInfo">Âge du bébé calculé : {{ ageInfo.age || 0 }} {{ ageInfo.temps || "mois" }}{{ ageInfo.temps === 'an' && ageInfo.age > 1 ? 's' : '' }}</span>
+                        <span style="padding-left: 5px; color: red; font-weight: bold;" *ngIf="ageInfo?.age > 4">Le bébé est agé</span>
+                        <div class="formgrid grid">
+                            <div class="field col">
+                              <p-calendar name="selectedDate4" 
+                                          dateFormat="dd/mm/yy" 
+                                          [(ngModel)]="selectedDate4" 
+                                          (ngModelChange)="onDateChange($event)" 
+                                          [showIcon]="true" 
+                                          inline="true" styleClass="small-datepicker">
+                              </p-calendar>
+                            </div>
+                         </div>
+                        
+                      </div>
+                </div>
+              
+
+                  <div *ngIf="this.passager.valCheck === 1 && ageInfo?.age < 4" class="formgrid grid">
+                    <div class="field col-7">
+                        <label for="name">Nom complet de l'enfant</label>
+                        <input type="text"
+                               [(ngModel)]="nomCompletEnfant"
+                               pInputText required autofocus
+                               [ngClass]="{'ng-invalid ng-dirty': submitted}" />
+                      </div>
+                </div>             
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="savePassager()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="placeDialog" [style]="{width: '1500px'}" header="Places disponibles pour le trajet" [modal]="true" position="top" class="">
+            <ng-template pTemplate="content">
+              <div class="grid">
+                <p-tabView>
+                  <div>
+                    <p-badge [value]="getBadgeNumber(1)" [severity]="getSeverity(1)" styleClass="mr-2"></p-badge> Chaise
+                    <p-badge [value]="getBadgeNumber(2)" [severity]="getSeverity(2)" styleClass="mr-2"></p-badge> Cabine à 2 places
+                    <p-badge [value]="getBadgeNumber(3)" [severity]="getSeverity(3)" styleClass="mr-2"></p-badge> Cabine à 4 places
+                    <p-badge [value]="getBadgeNumber(4)" [severity]="getSeverity(4)" styleClass="mr-2"></p-badge> Cabine à 8 places
+                    <div [ngClass]="['color-indicator', getColorClass('H')]" class="mr-1"></div> Place Homme
+                    <div [ngClass]="['color-indicator', getColorClass('F')]" class="mr-1"></div> Place Femme
+                    <div [ngClass]="['color-indicator', getColorClass('M')]" class="mr-1"></div> Place Mixte
+                  </div>
+                  <br/>
+                  <p-tabPanel *ngFor="let section of sections" [header]="section.nivNom">
+                    <div class="place-buttons">
+                      <div class="button-row" *ngFor="let place of section.places; let i = index">
+                        <p-button *ngIf="place.alreadyInVoyage == false" (click)="!place.disabled && !place.alreadyInVoyage && onPlaceClick(place)" [styleClass]="getButtonClass(place)" [disabled]="place.disabled || place.alreadyInVoyage">
+                          <div class="button-content">
+                            <p-badge [value]="getBadgeNumber(place.typePlace)" 
+                            [severity]="getSeverity(place.typePlace)" 
+                            styleClass="mr-2">
+                          </p-badge>
+                            <img [src]="getIcon(place.typePlace)" alt="{{place.plcCode}} icon" class="icon-svg"/>
+                            <span>{{ place.plcCode }}</span>
+                                <div 
+                                  [ngClass]="['color-indicator', getColorClass(place.sexe), 'ml-2']">
+                                </div>
+                          </div>
+                        </p-button>
+                      </div>
+                    </div>
+                    
+                  </p-tabPanel>
+                </p-tabView>
+          
+              </div>             
+            </ng-template>
+        </p-dialog>
+
+
+    </div>
+</div>

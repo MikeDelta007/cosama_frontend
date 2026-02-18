@@ -1,0 +1,61 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+           
+            <p-tabView>
+                <p-tabPanel *ngFor="let situ of getRecByState_" [header]="situ.etat">
+                  <p-table #dt [value]="situ.recs" scrollable="true" scrollHeight="400px" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['fact_code', 'date_facturation', 'montant_facture', 'firstname', 'lastname', 'telephone']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                    <ng-template pTemplate="caption">
+                      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                          <h5 class="m-0">Gestion des reclamations</h5>
+                          <span class="block mt-2 md:mt-0 p-input-icon-left">
+                              <i class="pi pi-search"></i>
+                              <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                          </span>
+                      </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th pSortableColumn="code">Reclamation N°<p-sortIcon field="code"></p-sortIcon></th>
+                        <th pSortableColumn="name">Date de dépot<p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="price">Motif<p-sortIcon field="price"></p-sortIcon></th>
+                        <th pSortableColumn="category">Action<p-sortIcon field="category"></p-sortIcon></th>
+                      </tr>
+                    </ng-template>
+              
+                    <ng-template pTemplate="body" let-rec>
+                        <tr>
+                            <td style="width:15%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                {{rec.dossier_reclamation}}
+                            </td>
+                            <td style="width:10%; min-width:10rem;">
+                                <span class="p-column-title">Name</span>
+                                {{ rec.date_reclamation }}
+                            </td>
+                            <td style="width:25%; min-width:8rem;">
+                                <span class="p-column-title">Price</span>
+                                {{rec.motif_reclamation}}
+                            </td>
+                            <td>
+                                <div class="flex">
+                                    <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning p-button-sm mr-2">
+                                        <i class="pi pi-eye" style="margin-right: 8px;"></i>Consulter le frêt
+                                    </button> 
+                                    
+                                    <button pButton pRipple iconPos="left" class="p-button-rounded p-button-primary p-button-sm mr-2">
+                                        <i class="pi pi-pencil" style="margin-right: 8px;"></i>Décider<template></template>
+                                    </button> 
+                                </div>
+                            </td>
+                        </tr>
+    
+                    </ng-template>
+                  </p-table>
+                </p-tabPanel>
+              </p-tabView>
+        </div>
+    </div>
+</div>
+
+

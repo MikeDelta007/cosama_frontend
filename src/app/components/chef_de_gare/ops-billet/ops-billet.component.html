@@ -1,0 +1,124 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Identifier le billet" icon="pi pi-download" class="p-button-success mr-2" (click)="openNew_()"></button>
+                    </div>
+                </ng-template>
+            </p-toolbar>
+
+            <div *ngIf="billets && billets.length > 0; else noBillets">
+                <p-table #dt [value]="billets" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                    
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th pSortableColumn="code">N° Billet <p-sortIcon field="code"></p-sortIcon></th>
+                            <th pSortableColumn="name">Prénom (s) <p-sortIcon field="name"></p-sortIcon></th>
+                            <th pSortableColumn="price">Nom <p-sortIcon field="price"></p-sortIcon></th>
+                            <th>Autorisation sur le billet</th>
+                        </tr>
+                    </ng-template>
+                    
+                    <ng-template pTemplate="body" let-billet>
+                        <tr>
+                            <td style="width:15%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                {{billet.bilCode}}
+                            </td>
+                            <td style="width:30%; min-width:10rem;">
+                                <span class="p-column-title">Prénom</span>
+                                {{billet.firstname}}
+                            </td>
+                            <td style="width:20%; min-width:10rem;"><span class="p-column-title">Nom</span>
+                                {{billet.lastname}}
+                            </td>
+                            <td>
+                                <div class="flex">
+                                    <p-button *ngIf="billet.bilEtat && !billet.edit" label="Editer" icon="pi pi-user-edit" styleClass="p-button-primary mr-2 mb-2" (onClick)="openNew()">
+                                    </p-button>
+                                    <p-button *ngIf="!billet.bilEtat && !billet.remb" label="Rembourser" icon="pi pi-wallet" styleClass="p-button-warning mr-2 mb-2" (onClick)="openNew2()">
+                                    </p-button>
+                                    <!-- <p-button *ngIf="billet.bilEtat === true && billet.rep_sur === false" label="Reporter/Surclasser" icon="pi pi-tags" styleClass="p-button-help mr-2 mb-2" (onClick)="openNew3()">
+                                    </p-button> -->
+                                    <p-button *ngIf="billet.bilEtat" label="Annuler" icon="pi pi-trash" styleClass="p-button-danger mr-2 mb-2" (onClick)="cancelBillet(billet)">
+                                    </p-button>
+
+                                    <!-- && billet.edit -->
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            
+            <!-- Template à afficher si aucun billet n'est disponible -->
+            <ng-template #noBillets>
+                <div class="p-mt-4 p-text-center">
+                    <p>Aucun billet n'est disponible.</p>
+                </div>
+            </ng-template>
+            
+        </div>
+
+        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Saisir le numéro de billet" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="name">Numéro du billet</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="codeBillet" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Afficher le billet" icon="pi pi-check" class="p-button-text" (click)="searchTitre()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="enableEdit" header="COSAMA" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="billet">Autorisez vous la modification du billet n° : <br/><b>{{billet.bilCode}}</b> ?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="enableEdit = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="isEdit(billet)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="enableRepS" header="COSAMA" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="billet">Autorisez vous le report / surclassement du billet n° : <br/><b>{{billet.bilCode}}</b> ?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="enableRepS = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="isRepSur(billet)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="enableRemb" header="COSAMA" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="billet">Autorisez vous le remboursement du billet n° : <br/><b>{{billet.bilCode}}</b> ?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="enableRemb = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="isRembs(billet)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deletepassagerDialog" header="COSAMA" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="billet">Voullez vous supprimer le billet n° : <b>{{billet.bilCode}}</b> ?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="deletepassagerDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="annulerBillet(billet)"></button>
+            </ng-template>
+        </p-dialog>
+
+    </div>
+</div>

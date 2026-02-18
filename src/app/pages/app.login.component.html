@@ -1,0 +1,18 @@
+<form (submit)="login()">
+<div class="login-body">
+    <p-toast></p-toast>
+    <div class="login-wrapper">
+        <div class="login-panel">
+            <a href="http://www.cosama.sn" class="logo">
+                <img src="assets/layout/images/cosama.jpg" alt="poseidon-layout" style="width: 150px; height: auto;" />
+            </a>
+            <div class="login-form">
+                <h3>Connectez vous à SILECS</h3>
+                        <input type="text" [(ngModel)]="credentials.login" autocomplete="on" pInputText placeholder="Votre nom d'utilisateur"/>
+                        <input type="password" [(ngModel)]="credentials.password" autocomplete="off" pInputText placeholder="Votre mot de passe"/>
+                        <button pButton pRipple label="Connexion" type="submit"></button>
+                </div>
+        </div>
+    </div> 
+</div>
+</form>

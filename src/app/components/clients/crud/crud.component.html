@@ -1,0 +1,315 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Ajouter un nouveau client en compte" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        </div>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="clientEnComptes" [columns]="cols" responsiveLayout="scroll" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="5" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="bateau.batId">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Gestion des clients en compte</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="bat_ref">Client</th>
+                        <th pSortableColumn="bat_nom">Contact</th>
+                        <th pSortableColumn="owner">Plafond</th>
+                        <th pSortableColumn="places">Disponibilité</th>
+                        <th>Actions</th>
+                        <th>Situation</th>
+                </ng-template>
+                <ng-template pTemplate="body" let-cltcompte>
+                    <tr>
+                        <td style="width:15%; min-width:10rem;">
+                            {{cltcompte.raisonSocial}}
+                        </td>
+                        <td style="width:45%; min-width:10rem;">
+                            {{cltcompte.firstnameContact}} - {{cltcompte.lastnameContact}} - {{cltcompte.contact}}
+                        </td>
+                   
+                        <td style="width:10%; min-width:8rem;">
+                            {{cltcompte.plafond}}
+                        </td>
+                        <td style="width:10%; min-width:10rem;">
+                            {{cltcompte.soldeCompte}}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" (click)="editProduct(cltcompte)"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-rounded p-button-help mr-2"></button>
+                                <button pButton pRipple icon="pi pi-folder" class="p-button-rounded p-button-primary mr-2" (click)="getFolderClt(cltcompte)"></button>
+                            </div>
+                        </td>
+                        <td colspan="2" style="display: flex; align-items: center; gap: 1rem; min-width: 20rem;">
+                          <div style="flex: 1;">
+                            <app-graduated-bar
+                              [value]="(cltcompte.soldeCompte / cltcompte.plafond) * 100">
+                            </app-graduated-bar>
+                          </div>
+                          <div style="width: 3rem; text-align: right;">
+                            <b>{{ (cltcompte.soldeCompte / cltcompte.plafond) * 100 | number:'1.0-0' }}%</b>
+                          </div>
+                        </td>
+                        
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Création d'un client en compte" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="formgrid grid">
+                <div class="field col">
+                  <label for="name">Raison sociale</label>
+                  <input type="text" [(ngModel)]="clientEnCompteCreate.raisonSocial" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Numéro de piece obligatoire</small>
+                </div>
+
+                </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Prénom (s) du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.firstnameContact" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>   
+                </div>
+
+                <div class="field col">
+                  <label for="name">Nom du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.lastnameContact" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Téléphone du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.contact" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>
+                <div class="field col">
+                  <label for="name">Email du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.mail" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Compte Compta Géné</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.cptgen_compta" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>
+                <div class="field col">
+                  <label for="name">Compte Tiers</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.cpttiers_compta" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Plafond</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteCreate.plafond" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div> 
+                <div class="field col">
+                    <label for="status">Mode de réglement</label>
+                    <p-dropdown [(ngModel)]="clientEnCompteCreate.modergltId" optionValue="modergltId" optionLabel="libelleModeReglm" [options]="cltModeRglmts" placeholder="Choisir..." appendTo="body">
+                    </p-dropdown>
+                </div>
+                          
+              </div>
+               
+            </ng-template>
+  
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveProduct()">
+                </button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog2" [style]="{width: '450px'}" header="Modification d'un client en compte" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="formgrid grid">
+                <div class="field col">
+                  <label for="name">Raison sociale</label>
+                  <input type="text" [(ngModel)]="clientEnCompteEdit.raisonSocial" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Numéro de piece obligatoire</small>
+                </div>
+
+                </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Prénom (s) du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.firstnameContact" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>   
+                </div>
+
+                <div class="field col">
+                  <label for="name">Nom du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.lastnameContact" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Téléphone du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.contact" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>
+                <div class="field col">
+                  <label for="name">Email du contact</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.mail" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Compte Compta Géné</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.cptgen_compta" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>
+                <div class="field col">
+                  <label for="name">Compte Tiers</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.cpttiers_compta" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div>                
+              </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Plafond</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="clientEnCompteEdit.plafond" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>
+                </div> 
+                <div class="field col">
+                    <label for="status">Mode de réglement</label>
+                    <p-dropdown [(ngModel)]="clientEnCompteEdit.modergltId" optionValue="modergltId" optionLabel="libelleModeReglm" [options]="cltModeRglmts" placeholder="Choisir..." appendTo="body">
+                    </p-dropdown>
+                </div>
+                          
+              </div>
+               
+            </ng-template>
+  
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveProduct2(clientEnCompteEdit.cltcmptId)">
+                </button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog3" [style]="{width: '1500px'}" header="Dossier des frêts relevés pour le client en compte" [modal]="true" class="p-fluid">
+          <ng-template pTemplate="content">
+            <p-table #dt [value]="frets" [columns]="cols" responsiveLayout="scroll" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="5" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true">
+              <ng-template pTemplate="header">
+                  <tr>
+                      <th>N° de frêt</th>
+                      <th>Date de l'opération</th>
+                      <th>Expéditeur</th>
+                      <th>Destinataire</th>
+                      <th>Montant HT</th>
+                      <th>TVA</th>
+                      <th>Remise</th>
+                      <th>Peseur</th>
+                      <th>Caissier</th>
+                      <th>Etat</th>
+              </ng-template>
+              <ng-template pTemplate="body" let-frt>
+                  <tr>
+                      <td style="width:5%; min-width:10rem; font-size:0.85rem;">
+                          {{frt.fretCode}}
+                      </td>
+                      <td style="width:10%; min-width:10rem; font-size:0.85rem;">
+                          {{frt.fretDate}}
+                      </td>
+                 
+                      <td style="width:20%; min-width:8rem; font-size:0.85rem;">
+                        {{frt.cltcmpt_id}}
+                      </td>
+                      <td style="width:20%; min-width:10rem; font-size:0.85rem;">
+                        {{frt.firstnameDest}} - {{frt.lastnameDest}} - {{frt.telephoneDest}} 
+                      </td>
+                      <td style="width:5%; min-width:10rem; font-size:0.85rem;">
+                        {{frt.fretMontant_ht}}
+                      </td>
+                      <td style="width:5%; min-width:10rem;font-size:0.85rem;">
+                        {{frt.fretTva}}
+                      </td>
+                      <td style="width:5%; min-width:10rem; font-size:0.85rem;">
+                        {{frt.fretRemise}}
+                      </td>
+                      <td style="width:5%; min-width:10rem; font-size:0.85rem;">
+                        {{frt.usrLogin}}
+                      </td>
+                      <td style="width:5%; min-width:10rem; font-size:0.85rem;">
+                        {{frt.fretPayUsr}}
+                      </td>
+                      <td style="width:5%; min-width:10rem; font-size:0.85rem;">
+                        {{frt.applyPayment}}
+                      </td>
+                     
+                  </tr>
+              </ng-template>
+          </p-table>
+          </ng-template>
+
+          <ng-template pTemplate="footer">
+          </ng-template>
+      </p-dialog>
+
+        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+    </div>
+</div>

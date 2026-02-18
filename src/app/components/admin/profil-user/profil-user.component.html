@@ -1,0 +1,641 @@
+<div class="col-12">
+    <div class="card">
+        <p-tabView orientation="left">
+            <p-tabPanel header="Profils & Droits" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter un profil" icon="pi pi-plus" class="p-button-primary mr-2" (click)="openNew()"></button>
+                                        <!-- <button pButton pRipple label="Assujetir" icon="pi pi-plus" class="p-button-primary mr-2" (click)="openNew()"></button>
+                     -->
+                                    </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="profils" [columns]="cols1" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des profils et des droits</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="code">Libellé<p-sortIcon field="agcNom"></p-sortIcon></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-profil>
+                                    <tr [ngStyle]="{'background-color': profil.actif ? '#d4edda' : '#f8d7da'}">
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{profil.prfl_libelle}}
+                                        </td>
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifProfil(profil)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>                                                
+                                                <button *ngIf="profil.actif" pButton pRipple iconPos="left" class="p-button-rounded p-button-danger mr-2" (click)="openDesactivProfil(profil)">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Désactiver
+                                                </button>
+                                                <button *ngIf="!profil.actif" pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2" (click)="openDesactivProfil(profil)">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Activer
+                                                </button>
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-success mr-2" (click)="modifDroit(profil)">
+                                                    <i class="pi pi-shield" style="margin-right: 8px;"></i>Droits
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Ajouter un profil" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                 <div class="field">
+                                    <label for="name">Intitulé du profil</label>
+                                    <input type="text" pInputText id="prflLibelle" [(ngModel)]="profilCreate_0.prfl_libelle" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !prflLibelle}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !prflLibelle">Name is required.</small>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveProfil()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="profilEditDialog" [style]="{width: '450px'}" header="Modifier un profil" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                 <div class="field">
+                                    <label for="name">Intitulé du profil</label>
+                                    <input type="text" pInputText id="prflLibelle" [(ngModel)]="profilEdit.prfl_libelle" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !prflLibelle}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !prflLibelle">Name is required.</small>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="updateLibProf(profilEdit.prfl_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="droitsEditDialog" [style]="{width: '1050px'}" header="Gestion des droits d'accés" [modal]="true" class="p-fluid">
+                            <table class="w-full border-collapse border border-cyan-500">
+                                <!-- Section "Administration" -->
+                                <tr>
+                                    <td colspan="7" class="font-bold p-1 bg-cyan-100 text-center border-b border-cyan-500">Administration</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">
+                                        <div class="flex gap-2 justify-center">
+                                            <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                                <p-checkbox inputId="editParam" [(ngModel)]="profilEdit.edit_param" [binary]="true"/>
+                                                <label for="parametrage" class="ml-1 text-sm">Edition système</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex gap-2 justify-center">
+                                            <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                                <p-checkbox inputId="editParam" [(ngModel)]="profilEdit.reclamation" [binary]="true"/>
+                                                <label for="parametrage" class="ml-1 text-sm">Reclamations</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex gap-2 justify-center">
+                                            <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                                <p-checkbox inputId="editParam" [(ngModel)]="profilEdit.campagne" [binary]="true"/>
+                                                <label for="parametrage" class="ml-1 text-sm">Campagne</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            
+                                <!-- Section "Voyage" -->
+                                <tr>
+                                    <td colspan="7" class="font-bold p-1 bg-cyan-100 text-center border-b border-cyan-500">Voyage</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addVoyage" [(ngModel)]="profilEdit.add_voyage" [binary]="true"/>
+                                            <label for="ajouter-voyage" class="ml-1 text-sm">Ajouter</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editVoyage" [(ngModel)]="profilEdit.edit_voyage" [binary]="true"/>
+                                            <label for="modifier-voyage" class="ml-1 text-sm">Modifier</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="cancelVoyage" [(ngModel)]="profilEdit.cancel_voyage" [binary]="true"/>
+                                            <label for="pointer-voyage" class="ml-1 text-sm">Annuler</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="viewVoyage" [(ngModel)]="profilEdit.view_voyage" [binary]="true"/>
+                                            <label for="pointer-voyage" class="ml-1 text-sm">Consulter</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="planVoyage" [(ngModel)]="profilEdit.plan_voyage" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Plan</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="bloqPlaces" [(ngModel)]="profilEdit.bloq_places" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Bloçage Place</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="rechercher" [(ngModel)]="profilEdit.rechercher" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Track Billet</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Section "Billeterie" -->
+                                <tr>
+                                    <td colspan="7" class="font-bold p-1 bg-cyan-100 text-center border-b border-cyan-500">Billetterie</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addBillet" [(ngModel)]="profilEdit.add_billet" [binary]="true"/>
+                                            <label for="ajouter-voyage" class="ml-1 text-sm">Ajouter</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editBillet" [(ngModel)]="profilEdit.edit_billet" [binary]="true"/>
+                                            <label for="modifier-voyage" class="ml-1 text-sm">Editer</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="cancelBillet" [(ngModel)]="profilEdit.cancel_billet" [binary]="true"/>
+                                            <label for="pointer-voyage" class="ml-1 text-sm">Annuler</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="doRemboursement" [(ngModel)]="profilEdit.do_remboursement" [binary]="true"/>
+                                            <label for="plan-voyage" class="ml-1 text-sm">Remboursement</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="doRepSurclassment" [(ngModel)]="profilEdit.do_rep_surclassment" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Report/Surclassement</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addCheckBillet" [(ngModel)]="profilEdit.add_check_billet" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Controler</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addEmbarq" [(ngModel)]="profilEdit.add_embarqment" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Embarquer</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Section "Frêt" -->
+                                <tr>
+                                    <td colspan="7" class="font-bold p-1 bg-cyan-100 text-center border-b border-cyan-500">Frêt</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addFret" [(ngModel)]="profilEdit.add_fret" [binary]="true"/>
+                                            <label for="ajouter-voyage" class="ml-1 text-sm">Ajouter</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editFret" [(ngModel)]="profilEdit.edit_fret" [binary]="true"/>
+                                            <label for="modifier-voyage" class="ml-1 text-sm">Editer</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editFret" [(ngModel)]="profilEdit.cancel_fret" [binary]="true"/>
+                                            <label for="pointer-voyage" class="ml-1 text-sm">Annuler</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="payeFret" [(ngModel)]="profilEdit.paye_fret" [binary]="true"/>
+                                            <label for="plan-voyage" class="ml-1 text-sm">Payer</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="delFretDetail" [(ngModel)]="profilEdit.del_fret_details" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Effacer détails</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="checkFret" [(ngModel)]="profilEdit.check_fret" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Contrôle</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Section "Voyage" -->
+                                <tr>
+                                    <td colspan="7" class="font-bold p-1 bg-cyan-100 text-center border-b border-cyan-500">Client en compte</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addCltCompte" [(ngModel)]="profilEdit.add_clt_compte" [binary]="true"/>
+                                            <label for="ajouter-voyage" class="ml-1 text-sm">Ajouter</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editCltCompte" [(ngModel)]="profilEdit.edit_clt_compte" [binary]="true"/>
+                                            <label for="modifier-voyage" class="ml-1 text-sm">Modifier</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editCltCompte" [(ngModel)]="profilEdit.add_reglement" [binary]="true"/>
+                                            <label for="pointer-voyage" class="ml-1 text-sm">Ajouter Régl.</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editCltCompte" [(ngModel)]="profilEdit.del_reglement" [binary]="true"/>
+                                            <label for="plan-voyage" class="ml-1 text-sm">Annuler Régl.</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="addFacture" [(ngModel)]="profilEdit.add_facture" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Ajouter Fact.</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="editFacture" [(ngModel)]="profilEdit.edit_facture" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Modifier Fact.</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="edition" [(ngModel)]="profilEdit.edition" [binary]="true"/>
+                                            <label for="consulter-voyage" class="ml-1 text-sm">Edition</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Section "Voyage" -->
+                                <tr>
+                                    <td colspan="7" class="font-bold p-1 bg-cyan-100 text-center border-b border-cyan-500">Etats & Statistiques</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="edition" [(ngModel)]="profilEdit.view_etat" [binary]="true"/>
+                                            <label for="ajouter-voyage" class="ml-1 text-sm">Consulter les états</label>
+                                        </div>
+                                    </td>
+                                    <td class="p-2">
+                                        <div class="flex items-center border border-cyan-500 p-1 rounded-lg">
+                                            <p-checkbox inputId="viewStat" [(ngModel)]="profilEdit.view_stat" [binary]="true"/>
+                                            <label for="modifier-voyage" class="ml-1 text-sm">Accéder aux stats.</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveProduct2(profilEdit.prfl_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="desactivProfilUserDialog" header="Désactivation du profil" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="this.profilEdit3">Voulez vous désactiver le profil <b>{{this.profilEdit3.prfl_libelle}}</b> ?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Je confirme" (click)="updateEtatProf(this.profilEdit3.prfl_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="desactivProfilUserDialog2" header="Activation du profil" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="this.profilEdit3">Voulez vous activer le profil <b>{{this.profilEdit3.prfl_libelle}}</b> ?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Je confirme" (click)="updateEtatProf(this.profilEdit3.prfl_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+            <p-tabPanel header="Utilisateurs" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter un utilisateur" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew2()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="users" [columns]="cols2" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des utilisateurs</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Login</th>
+                                        <th>Prénom (s) & Nom</th>
+                                        <th>Agence</th>
+                                        <th>Profil</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-user>
+                                    <tr [ngStyle]="{'background-color': user.usr_etat ? '#d4edda' : '#f8d7da'}">
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{user.usr_firstname}}
+                                        </td>
+                                        <td style="width:30%; min-width:10rem;">
+                                            {{user.usr_lastname}}
+                                        </td>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{ user.agc_id | agence: agences }}
+                                        </td>
+                                        <td style="width:15%; min-width:10rem;">
+                                            {{ user.prfl_id | profil: profils }}
+                                        </td>
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifUser(user)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>
+                                                <button *ngIf="user.usr_etat" pButton pRipple iconPos="left" class="p-button-rounded p-button-danger mr-2" (click)="openDesactivUser(user)">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Désactiver
+                                                </button> 
+                                                <button *ngIf="!user.usr_etat" pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2" (click)="openDesactivUser(user)">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Activer
+                                                </button> 
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-primary mr-2" (click)="openResetPassword(user)">
+                                                    <i class="pi pi-eraser" style="margin-right: 8px;"></i>Reset
+                                                </button> 
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+                        <p-dialog [(visible)]="productDialog0" [style]="{width: '450px'}" header="Création d'un nouvel utilisateur" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="name">Login</label>
+                                  <input type="text" [(ngModel)]="userCreate_0.usr_login" pInputText required autofocus />
+                                  <small class="ng-dirty ng-invalid" >Numéro de piece obligatoire</small>
+                                </div>
+                
+                                </div>
+                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Mot de passe</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="this.valuePswd" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>   
+                                </div>
+                
+                                <!-- <div class="field col">
+                                  <label for="name">Confirmation</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="valuePswdConf" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>                 -->
+                              </div>
+                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Prénom (s)</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="userCreate_0.usr_firstname" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>
+                                <div class="field col">
+                                  <label for="name">Nom</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="userCreate_0.usr_lastname" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>                
+                              </div>
+                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Numéro de téléphone</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="userCreate_0.usr_desc" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>
+                                         
+                              </div>
+                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                    <label for="status">Agence</label>
+                                    <p-dropdown [(ngModel)]="userCreate_0.agc_id" optionValue="agc_id" optionLabel="agc_nom" [options]="agences" placeholder="Choisir..." appendTo="body">
+                                    </p-dropdown>
+                                </div>
+                                <div class="field col">
+                                    <label for="status">Profil</label>
+                                    <p-dropdown [(ngModel)]="userCreate_0.prfl_id" optionValue="prfl_id" optionLabel="prfl_libelle" [options]="profils_true" placeholder="Choisir..." appendTo="body">
+                                    </p-dropdown>
+                                </div>
+                                          
+                              </div>
+                               
+                            </ng-template>
+                  
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveUser()">
+                                </button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="userEditDialog" [style]="{width: '450px'}" header="Modification d'un utilisateur" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="name">Login</label>
+                                  <input type="text" [(ngModel)]="userEdit.usr_login" pInputText required autofocus />
+                                  <small class="ng-dirty ng-invalid">Obligatoire</small>
+                                </div>
+                
+                                </div>
+                                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Prénom (s)</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="userEdit.usr_firstname" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>
+                                <div class="field col">
+                                  <label for="name">Nom</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="userEdit.usr_lastname" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>                
+                              </div>
+                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Téléphone</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="userEdit.usr_desc" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>
+                                         
+                              </div>
+                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                    <label for="status">Agence</label>
+                                    <p-dropdown [(ngModel)]="userEdit.agc_id" optionLabel="agc_nom" optionValue="agc_id" [options]="agences" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-agence pTemplate="item">
+                                            <span>{{agence.agc_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div class="field col">
+                                    <label for="status">Profil</label>
+                                    <p-dropdown [(ngModel)]="userEdit.prfl_id" optionLabel="prfl_libelle" optionValue="prfl_id" [options]="profils_true" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-profil pTemplate="item">
+                                            <span>{{profil.prfl_libelle}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                          
+                              </div>
+                               
+                            </ng-template>
+                  
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="updateUser(userEdit.usr_id)">
+                                </button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="resetPasswordDialog" [style]="{width: '450px'}" header="Réinitialiser le mot de passe" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Nouveau mot de passe</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="rp.usr_password" pInputText required autofocus />
+                                  </div>
+                                  <!-- <small class="ng-dirty ng-invalid" >Obligatoire</small> -->
+                                  <small class="ng-dirty ng-invalid" >NB : Le mot de passe sera envoyé par SMS à l'utilisateur</small>
+                                </div>
+                                         
+                              </div>
+                            </ng-template>
+                  
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="resetPassword(userEdit4.usr_id)">
+                                </button>
+                            </ng-template>
+                        </p-dialog>
+                
+                
+                        <p-dialog [(visible)]="desactivUserDialog" header="Activation de l'utilisateur" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="this.userEdit3">Voulez vous désactiver le compte de l'utilisateur :
+                                    <br/><b>{{this.userEdit3.usr_firstname}} - {{this.userEdit3.usr_lastname}}</b> ?
+                                </span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Je confirme" (click)="updateEtatUser(this.userEdit3.usr_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="desactivUserDialog2" header="Désactivation de l'utilisateur" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="this.userEdit3">Voulez vous désactiver le compte de l'utilisateur :
+                                    <br/><b>{{this.userEdit3.usr_firstname}} - {{this.userEdit3.usr_lastname}}</b> ?
+                                </span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Je confirme" (click)="updateEtatUser(this.userEdit3.usr_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+            </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>

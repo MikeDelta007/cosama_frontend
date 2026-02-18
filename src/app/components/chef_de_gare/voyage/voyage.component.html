@@ -1,0 +1,276 @@
+<div class="col-12">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <div class="my-2">
+                <button pButton pRipple label="Créer un voyage" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                <button pButton pRipple label="Visualiser le planning des voyages" icon="pi pi-eye" class="p-button-primary mr-2" routerLink="/chef-de-gare/planning-voyage"></button>
+                </div>
+        </ng-template>
+    </p-toolbar>
+    <div class="card">
+        <p-tabView orientation="left">
+            <p-tabPanel header="Listing des voyages" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            
+                            <p-table #dt [value]="voyages" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" styleClass="p-datatable-gridlines" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des voyages</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="code">ID Voyage <p-sortIcon field="code"></p-sortIcon></th>
+                                        <th pSortableColumn="name">Bateau <p-sortIcon field="name"></p-sortIcon></th>
+                                        <th pSortableColumn="price">Départ <p-sortIcon field="price"></p-sortIcon></th>
+                                        <th pSortableColumn="category">Arrivé <p-sortIcon field="category"></p-sortIcon></th>
+                                        <th pSortableColumn="inventoryStatus">Actions <p-sortIcon field="inventoryStatus"></p-sortIcon></th>
+                                        <th></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-voyage>
+                                    <tr>
+                                        <td style="width:10%;">
+                                            {{voyage.code_voyage}}
+                                        </td>
+                                        <td style="width:15%;">
+                                            {{getBateauNomById(voyage.bat_id)}}
+                                        </td>
+                                        <td style="width:20%;">
+                                            {{getVilleNomById(voyage.voy_depart)}}<br/>
+                                            {{formatDateComplete(voyage.voy_datedpt)}}
+                                        </td>
+                                        <td style="width:20%;">
+                                            {{getVilleNomById(voyage.voy_destination)}}<br/>
+                                            {{formatDateComplete(voyage.voy_datearriv)}}
+                                        </td>
+                                        
+                                        <td>
+                                            <div class="flex">
+                                                <button *ngIf="voyage"
+                                                        [disabled]="voyage.voy_etat === 0 || isToday(voyage.voy_datedpt)"
+                                                        pButton pRipple iconPos="left"
+                                                        class="p-button-rounded p-button-help mr-2"
+                                                        (click)="editVoyage(voyage)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>
+
+                                                <button *ngIf="voyage"
+                                                        [disabled]="voyage.voy_etat === 0"
+                                                        pButton pRipple iconPos="left"
+                                                        class="p-button-rounded p-button-danger mr-2"
+                                                        (click)="openMotifVoyage(voyage)">
+                                                    <i class="pi pi-times" style="margin-right: 8px;"></i>Annuler
+                                                </button>
+                                               <td
+                                                    [ngStyle]="{
+                                                        'background-color': isToday(voyage.voy_datedpt) ? 'gold' : (voyage.voy_etat === 0 ? 'red' : 'darkgreen'),
+                                                        'padding': '10px 10px',
+                                                        'border-radius': '6px'
+                                                    }"
+                                                    >
+                                                    <h4
+                                                        [ngStyle]="{
+                                                        'margin': '0',
+                                                        'font-size': '15px',
+                                                        'line-height': '1.2',
+                                                        'color': isToday(voyage.voy_datedpt) ? 'black' : 'white'
+                                                        }"
+                                                    >
+                                                        <ng-container *ngIf="isToday(voyage.voy_datedpt); else statusBlock">
+                                                        Voyage du jour
+                                                        </ng-container>
+                                                        <ng-template #statusBlock>
+                                                        <ng-container *ngIf="voyage.voy_etat === 1; else closedBlock">
+                                                            Voyage Actif
+                                                        </ng-container>
+                                                        <ng-template #closedBlock>
+                                                            Voyage Fermé
+                                                        </ng-template>
+                                                        </ng-template>
+                                                    </h4>
+                                                    </td>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="productDialog" [style]="{width: '550px', height: '500px'}" header="Créer un voyage" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                           
+                                <div class="field">
+                                    <label for="status">Bateau</label>
+                                    <p-dropdown [(ngModel)]="voyageCreate.bat_id" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-bateau pTemplate="item">
+                                            <span>{{bateau.bat_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                
+                                <div class="field" style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="flex: 1;">
+                                        <label for="name">Date de départ</label>
+                                        <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="voyageCreate.voy_datedpt" [showIcon]="true" inputId="icon" appendTo="body">
+                                        </p-calendar>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !voy_datedpt">Name is required.</small>
+                                    </div>
+                                    
+                                    <div style="flex: 1;">
+                                        <label for="status">Départ</label>
+                                        <p-dropdown [(ngModel)]="voyageCreate.voy_depart" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body">
+                                            <ng-template let-ville pTemplate="item">
+                                                <span>{{ville.vil_nom}}</span>
+                                            </ng-template>
+                                        </p-dropdown>
+                                    </div>
+                                
+                                    
+                                </div>
+                                
+                                <div class="field" style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="flex: 1;">
+                                        <label for="name">Date d'arrivé</label>
+                                        <p-calendar name="voy_datearriv" dateFormat="dd/mm/yy" [(ngModel)]="voyageCreate.voy_datearriv" [showIcon]="true" inputId="icon" appendTo="body">
+                                        </p-calendar>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !voy_datearriv">Name is required.</small>
+                                    </div>
+                                    
+                                    <div style="flex: 1;">
+                                        <label for="status">Destination</label>
+                                        <p-dropdown [(ngModel)]="voyageCreate.voy_destination" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body">
+                                            <ng-template let-ville pTemplate="item">
+                                                <span>{{ville.vil_nom}}</span>
+                                            </ng-template>
+                                        </p-dropdown>
+                                    </div>
+                                
+                                    
+                                </div>
+
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Enregitrer" icon="pi pi-check" class="p-button-text" (click)="saveVoyage()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="motifVoyDialog" [style]="{width: '450px'}" header="Motif d'annulation du voyage" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                
+                              <div class="formgrid grid">
+                                <div class="field col">
+                                  <label for="status">Préciser le motif d'annulation du voyage</label>
+                                  <div class="p-inputgroup">
+                                    <input type="text" [(ngModel)]="mt.motif" pInputText required autofocus />
+                                  </div>
+                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                </div>
+                                         
+                              </div>
+                            </ng-template>
+                  
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="cancelVoyage(voyageEdit.voy_id)">
+                                </button>
+                            </ng-template>
+                        </p-dialog>
+
+
+                        <p-dialog [(visible)]="editVoyageDialog" [style]="{width: '550px', height: '500px'}" header="Modifier un voyage" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">   
+                                <div class="field">
+                                    <label for="status">Bateau</label>
+                                    <p-dropdown [(ngModel)]="voyageEdit.bat_id" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-bateau pTemplate="item">
+                                            <span>{{bateau.bat_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                
+                                <div class="field" style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="flex: 1;">
+                                        <label for="name">Date de départ</label>
+                                        <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="voyageEdit.voy_datedpt" [showIcon]="true" inputId="icon" appendTo="body">
+                                        </p-calendar>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !voy_datedpt">Name is required.</small>
+                                    </div>
+                                    
+                                    <div style="flex: 1;">
+                                        <label for="status">Départ</label>
+                                        <p-dropdown [(ngModel)]="voyageEdit.voy_depart" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body">
+                                            <ng-template let-ville pTemplate="item">
+                                                <span>{{ville.vil_nom}}</span>
+                                            </ng-template>
+                                        </p-dropdown>
+                                    </div>
+                                
+                                    
+                                </div>
+                                
+                                <div class="field" style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="flex: 1;">
+                                        <label for="name">Date d'arrivé</label>
+                                        <p-calendar dateFormat="dd/mm/yy"  [(ngModel)]="voyageEdit.voy_datearriv" [showIcon]="true" inputId="icon" appendTo="body">
+                                        </p-calendar>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !voy_datearriv">Name is required.</small>
+                                    </div>
+                                    
+                                    <div style="flex: 1;">
+                                        <label for="status">Destination</label>
+                                        <p-dropdown [(ngModel)]="voyageEdit.voy_destination" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body">
+                                            <ng-template let-ville pTemplate="item">
+                                                <span>{{ville.vil_nom}}</span>
+                                            </ng-template>
+                                        </p-dropdown>
+                                    </div>
+                                
+                                    
+                                </div>
+
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Modifier le voyage" icon="pi pi-check" class="p-button-text" (click)="saveVoyage2()"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+
+                        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+           
+        </p-tabView>
+    </div>
+</div>

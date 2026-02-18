@@ -1,0 +1,150 @@
+<div class="">
+    <p-toast></p-toast>
+    <div class="grid p-fluid" *ngIf="this.user3 === 'admin'">
+        <div class="col-12 lg:col-6">
+            <!-- <div class="card">
+                <h5>Linear Chart</h5>
+                <p-chart type="line" [data]="lineData" [options]="lineOptions" [style]="{'width': '50%'}"></p-chart>
+            </div> -->
+    
+            <div class="card flex flex-column align-items-center">
+                <h5 class="text-left w-full">Répartition des utilisateurs par agence</h5>
+                <p-chart type="doughnut" [data]="pieData" [options]="pieOptions" [style]="{'width': '50%'}"></p-chart>
+            </div>
+    
+            <div class="card flex flex-column align-items-center">
+                <h5 class="text-left w-full">Répartition globale des types de place par niveau</h5>
+                <p-chart type="bar" [data]="empbarData" [options]="barOptions2" [style]="{'width': '100%'}">
+                </p-chart>
+            </div>
+    
+            <div class="card flex flex-column align-items-center">
+                <h5 class="text-left w-full">Répartition des type de bagages par unité</h5>
+                <p-chart type="doughnut" [data]="pieData2" [options]="pieOptions" [style]="{'width': '50%'}"></p-chart>
+            </div>
+        </div>
+        <div class="col-12 lg:col-6">
+            <div class="card">
+                <h5>Répartition des utilisateurs par profils</h5>
+                <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+            </div>
+    
+            <div class="card flex flex-column align-items-center">
+                <h5 class="text-left w-full">Répartition globale des types de place par bateau</h5>
+                <p-chart type="bar" [data]="empbarData2" [options]="barOptions2" [style]="{'width': '100%'}">
+                </p-chart>
+            </div>
+    
+            <!-- <div class="card flex flex-column align-items-center">
+                <h5 class="text-left w-full">Radar Chart</h5>
+                <p-chart type="radar" [data]="radarData" [options]="radarOptions" [style]="{'width': '50%'}"></p-chart>
+            </div> -->
+        </div>
+    </div>
+    
+    <div class="grid p-fluid" *ngIf="this.user3 != 'admin' && this.user">
+        <div class="col-12 lg:col-12">
+            <div class="card p-fluid">
+                <tr>
+                    <td>Bateau</td>
+                    <td style="padding-left: 10px; padding-right: 10px;">
+                        <p-dropdown [(ngModel)]="selectedBateau" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body" (onChange)="onBoatSelected()">
+                            <ng-template let-bateau pTemplate="item">
+                                <span>{{bateau.bat_nom}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </td>
+                    <td style="padding-left: 5px; padding-right: 10px;">
+                        <input pInputText [(ngModel)]="voyageOfDay" type="text" placeholder="Infos du voyage" class="w-32 sm:w-auto"/>     
+                    </td>
+                </tr>
+            </div>
+        </div>  
+        <div class="col-12 lg:col-12">
+            <p-tabView>
+                <div class="legend-container">
+                    <p-badge [value]="getBadgeNumber(1)" [severity]="getSeverity(1)" class="mr-2"></p-badge> Chaise
+                    <p-badge [value]="getBadgeNumber(2)" [severity]="getSeverity(2)" class="mr-2"></p-badge> Cabine à 2 places
+                    <p-badge [value]="getBadgeNumber(3)" [severity]="getSeverity(3)" class="mr-2"></p-badge> Cabine à 4 places
+                    <p-badge [value]="getBadgeNumber(4)" [severity]="getSeverity(4)" class="mr-2"></p-badge> Cabine à 8 places
+                    
+                    <div [ngClass]="['color-indicator', getColorClass('H')]" class="mr-1"></div> Place Homme
+                    <div [ngClass]="['color-indicator', getColorClass('F')]" class="mr-1"></div> Place Femme
+                    <div [ngClass]="['color-indicator', getColorClass('M')]" class="mr-1"></div> Place Mixte
+                    
+                    <div class="status-indicators">
+                        <div class="status-box other">Non occupé</div>
+                        <!-- <div class="status-box occupe">Occupé</div>
+                        <div class="status-box reserve">Réservé</div>
+                        <div class="status-box checkin">Check-In</div> -->
+                        <div class="status-box libre">Occupé</div>
+                    </div>
+                </div>
+                
+              <br/>
+              <p-tabPanel *ngFor="let section of sections" [header]="section.nivNom">
+                <div class="place-buttons">
+                  <div class="button-row" *ngFor="let place of section.places; let i = index">
+                    <p-button *ngIf="place.vplstate != 2" (click)="!place.disabled && !place.alreadyInVoyage" [styleClass]="getButtonClass(place)">
+                      <div class="button-content">
+                        <p-badge [value]="getBadgeNumber(place.typePlace)" 
+                        [severity]="getSeverity(place.typePlace)" 
+                        styleClass="mr-2">
+                      </p-badge>
+                        <img [src]="getIcon(place.typePlace)" alt="{{place.plcCode}} icon" class="icon-svg"/>
+                        <span>{{ place.plcCode }}</span>
+                            <div 
+                              [ngClass]="['color-indicator', getColorClass(place.sexe), 'ml-2']">
+                            </div>
+                      </div>
+                    </p-button>
+                  </div>
+                </div>
+                
+              </p-tabPanel>
+            </p-tabView>
+        </div>
+    </div>
+    
+    <div class="grid p-fluid" *ngIf="this.user3 != 'admin' && this.user2">
+        <div class="col-12 lg:col-12">
+            <div class="card p-fluid">
+                <tr>
+                    <td>Bateau</td>
+                    <td style="padding-left: 10px; padding-right: 10px;">
+                        <p-dropdown [(ngModel)]="selectedBateau2" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body" (onChange)="onBoatSelected2()">
+                            <ng-template let-bateau pTemplate="item">
+                                <span>{{bateau.bat_nom}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </td>
+                    <td style="padding-left: 5px; padding-right: 10px;">
+                        <input pInputText [(ngModel)]="voyageOfDay2" type="text" placeholder="Infos du voyage" class="w-32 sm:w-auto"/>     
+                    </td>
+                </tr>
+            </div>
+    
+            <div class="grid p-fluid text-center">        
+                <!-- Deuxième knob -->
+                <div class="col-12 md:col-4">
+                    <h5>Bilets vendus : {{billetsVendus}}</h5>
+                    <p-knob [(ngModel)]="partbilletsVendus" valueTemplate="{value}%" [step]="1" [min]="0" [max]="100" valueColor="gold"></p-knob>    
+                </div>
+              
+                <!-- Troisième knob -->
+                <div class="col-12 md:col-4">
+                    <h5>Billets contrôlés : {{billetsControles}}</h5>
+                    <p-knob [(ngModel)]="partbilletsControles" valueTemplate="{value}%" [step]="1" [min]="0" [max]="100" valueColor="green"></p-knob>    
+                </div>
+      
+                <div class="col-12 md:col-4">
+                    <h5>Billets en attente de contrôle : {{billetsEnAttente}}</h5>
+                    <p-knob [(ngModel)]="partbilletsEnAttente" valueTemplate="{value}%" [step]="1" [min]="0" [max]="100" valueColor="red"></p-knob>    
+                </div>
+              </div>
+        </div>  
+        
+    </div>
+</div>
+
+

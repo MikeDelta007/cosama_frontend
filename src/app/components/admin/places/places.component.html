@@ -1,0 +1,206 @@
+<div class="col-12">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <div class="my-2">
+                <button pButton pRipple label="Ajouter une nouvelle place" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+            </div>
+        </ng-template>
+    </p-toolbar>
+    <div class="card">
+       
+           <div class="grid">
+                <div class="col-12">
+                    <div class="">
+                        <p-toast></p-toast>
+                        <p-table #dt [value]="places" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['plc_code']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Gestion des places</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="plc_code">Code <p-sortIcon field="plc_code"></p-sortIcon></th>
+                                    <th pSortableColumn="name">Bateau <p-sortIcon field="name"></p-sortIcon></th>
+                                    <th pSortableColumn="price">Niveau <p-sortIcon field="price"></p-sortIcon></th>
+                                    <th pSortableColumn="category">Type Place <p-sortIcon field="category"></p-sortIcon></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-place>
+                                <tr>
+                                    <td style="width:14%; min-width:10rem;">
+                                        {{place.plc_code}}
+                                    </td>
+                                    <td style="width:14%; min-width:10rem;">
+                                        {{place.bateau.bat_nom}}
+                                    </td>
+                                    <td style="width:14%; min-width:10rem;">
+                                        {{place.niveau.niv_nom}}
+                                    </td>
+                                    <td style="width:14%; min-width:8rem;">
+                                        {{place.typePlace.tplc_nom}}
+                                    </td>
+                                    <td>
+                                        <div class="flex">
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifPlace(place)">
+                                                <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                            </button>                                                
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+            
+                    <p-dialog [(visible)]="productDialog" [style]="{width: '450px', height: '650px'}" header="Créer une nouvelle place" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            
+                            <div class="field">
+                                <label for="name">Code</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="placeCreate.plc_code" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>            
+                            <div class="field">
+                                <label for="status">Bateau</label>
+                                <p-dropdown [(ngModel)]="placeCreate.bat_id" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-bateau pTemplate="item">
+                                        <span>{{bateau.bat_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="field">
+                                <label for="status">Type de place</label>
+                                <p-dropdown [(ngModel)]="placeCreate.tplc_id" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-typePlace pTemplate="item">
+                                        <span>{{typePlace.tplc_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="field">
+                                <label for="status">Niveau</label>
+                                <p-dropdown [(ngModel)]="placeCreate.niv_id" optionValue="niv_id" optionLabel="niv_nom" [options]="niveaux" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-niveau pTemplate="item">
+                                        <span>{{niveau.niv_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+
+                            
+            
+                            
+            
+                            
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="savePlace()"></button>
+                        </ng-template>
+                    </p-dialog>
+
+                    <p-dialog [(visible)]="placeDialogEdit" [style]="{width: '450px', height: '650px'}" header="Modifier une place" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            
+                            <div class="field">
+                                <label for="name">Code</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="placeEdit.plc_code" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>            
+                            <div class="field">
+                                <label for="status">Bateau</label>
+                                <p-dropdown [(ngModel)]="placeEdit.bat_id" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-bateau pTemplate="item">
+                                        <span>{{bateau.bat_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="field">
+                                <label for="status">Type de place</label>
+                                <p-dropdown [(ngModel)]="placeEdit.tplc_id" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-typePlace pTemplate="item">
+                                        <span>{{typePlace.tplc_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="field">
+                                <label for="status">Niveau</label>
+                                <p-dropdown [(ngModel)]="placeEdit.niv_id" optionValue="niv_id" optionLabel="niv_nom" [options]="niveaux" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-niveau pTemplate="item">
+                                        <span>{{niveau.niv_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+
+                            <div class="field">
+                                <label class="mb-3"><b>Bloçage de la place par défaut ?</b></label>
+                                <div class="formgrid grid">
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton [value] = 1 [(ngModel)]="bloqPlace"></p-radioButton>
+                                        <label for="Oui">Oui</label>
+                                    </div>
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton [value] = 0 [(ngModel)]="bloqPlace"></p-radioButton>
+                                        <label for="Non">Non</label>
+                                    </div> 
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="mb-3"><b>Cette place est - elle destinéee pour Carabane ?</b></label>
+                                <div class="formgrid grid">
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton [value] = true [(ngModel)]="placeEdit.is_carabane"></p-radioButton>
+                                        <label for="Oui">Oui</label>
+                                    </div>
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton [value] = false [(ngModel)]="placeEdit.is_carabane"></p-radioButton>
+                                        <label for="Non">Non</label>
+                                    </div> 
+                                </div>
+                            </div>
+
+
+                            
+            
+                            
+            
+                            
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="savePlace2(placeEdit.plc_id)"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span>Are you sure you want to delete selected products?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                        </ng-template>
+                    </p-dialog>
+                </div>
+            </div>
+    </div>
+</div>

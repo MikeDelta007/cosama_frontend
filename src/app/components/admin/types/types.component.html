@@ -1,0 +1,775 @@
+<div class="col-12">
+    <div class="card">
+        <p-tabView orientation="left">
+            <p-tabPanel header="Agences" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter une agence" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                    
+                                    </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="agences" [columns]="cols1" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des agences</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="code">Nom de l'agence <p-sortIcon field="agcNom"></p-sortIcon></th>
+                                        <th pSortableColumn="agcTel">Téléphone <p-sortIcon field="agcTel"></p-sortIcon></th>
+                                        <th pSortableColumn="agcFax">Fax <p-sortIcon field="agcFax"></p-sortIcon></th>
+                                        <th pSortableColumn="agcResp">Responsable <p-sortIcon field="agcResp"></p-sortIcon></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-agence>
+                                    <tr>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{agence.agc_nom}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            {{agence.agc_tel}}
+                                        </td>
+                                        <td style="width:14%; min-width:8rem;">
+                                            {{agence.agc_tel}}
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{agence.agc_resp}}
+                                        </td>
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifAgence(agence)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>                                                
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Ajouter une agence" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                 <div class="field">
+                                    <label for="name">Nom de l'agence</label>
+                                    <input type="text" pInputText id="agcNom" [(ngModel)]="agenceCreate.agcNom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcNom}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcNom">Name is required.</small>
+                                </div>
+                                
+                                <div class="field">
+                                    <label for="status">Ville</label>
+                                    <p-dropdown [(ngModel)]="agenceCreate.vil_id" optionValue="vilId" optionLabel="vil_nom" [options]="villes" placeholder="Select">
+                                        <ng-template let-ville pTemplate="item">
+                                            <span>{{ville.vil_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+
+                                <div class="field">
+                                    <label for="name">Responsable</label>
+                                    <input type="text" pInputText id="agcResp" [(ngModel)]="agenceCreate.agcResp" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcResp}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcResp">Name is required.</small>
+                                </div>
+                
+                                <div class="formgrid grid">
+                                    <div class="field col">
+                                        <label>Téléphone</label>
+                                        <input type="text" pInputText id="agcTel" [(ngModel)]="agenceCreate.agcTel" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcTel}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcTel">Name is required.</small>
+                                    </div>
+                                    <div class="field col">
+                                        <label for="Fax">Fax</label>
+                                        <input type="text" pInputText id="agcFax" [(ngModel)]="agenceCreate.agcFax" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcFax}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcFax">Name is required.</small>
+                                    </div>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveAgence()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="editAgence" [style]="{width: '450px'}" header="Modification d'une agence" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                 <div class="field">
+                                    <label for="name">Nom de l'agence</label>
+                                    <input type="text" pInputText id="agcNom" [(ngModel)]="agenceEdit.agc_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcNom}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcNom">Name is required.</small>
+                                </div>
+                                
+                                <div class="field">
+                                    <label for="status">Ville</label>
+                                    <p-dropdown [(ngModel)]="agenceEdit.vil_id" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Select">
+                                        <ng-template let-ville pTemplate="item">
+                                            <span>{{ville.vil_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+
+                                <div class="field">
+                                    <label for="name">Responsable</label>
+                                    <input type="text" pInputText id="agcResp" [(ngModel)]="agenceEdit.agc_resp" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcResp}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcResp">Name is required.</small>
+                                </div>
+                
+                                <div class="formgrid grid">
+                                    <div class="field col">
+                                        <label>Téléphone</label>
+                                        <input type="text" pInputText id="agcTel" [(ngModel)]="agenceEdit.agc_tel" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcTel}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcTel">Name is required.</small>
+                                    </div>
+                                    <div class="field col">
+                                        <label for="Fax">Fax</label>
+                                        <input type="text" pInputText id="agcFax" [(ngModel)]="agenceEdit.agc_fax" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !agcFax}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !agcFax">Name is required.</small>
+                                    </div>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveAgence2(agenceEdit.agc_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+            <p-tabPanel header="Unités" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter une unité" icon="pi pi-plus" class="p-button-success mr-2" (click)="createNewUnite()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="unites" [columns]="cols2" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des unités</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="libelle">Libellé <p-sortIcon field="libelle"></p-sortIcon></th>
+                                        <th pSortableColumn="code">Code <p-sortIcon field="code"></p-sortIcon></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-unite>
+                                    <tr>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{unite.unite_nom}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            {{unite.unite_code}}
+                                        </td>
+                                  
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifUnite(unite)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>   
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                                </button> 
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="uniteDialog" [style]="{width: '450px', height: '450px'}" header="Ajouter une unité" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Intitulé</label>
+                                    <input type="text" pInputText id="uniteNom" [(ngModel)]="uniteCreate.uniteNom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !uniteNom}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !uniteNom">Name is required.</small>
+                                </div>
+                                <div class="field">
+                                    <label for="name">Code</label>
+                                    <input type="text" pInputText id="uniteCode" [(ngModel)]="uniteCreate.uniteCode" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !uniteCode}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !uniteCode">Name is required.</small>
+                                </div>
+                
+                                <div class="field">
+                                    <label for="status">Métrologie</label>
+                                    <p-dropdown [(ngModel)]="uniteCreate.vol_id" optionValue="volId" optionLabel="volNom" [options]="volumes" placeholder="Select">
+                                        <ng-template let-volume pTemplate="item">
+                                            <ng-container *ngIf="volume.volId === 1">Quantité</ng-container>
+                                            <ng-container *ngIf="volume.volId === 2">Poids</ng-container>
+                                            <ng-container *ngIf="volume.volId === 3">Volume</ng-container>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveUnite()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="editUnite" [style]="{width: '450px', height: '450px'}" header="Editer une unité" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Intitulé</label>
+                                    <input type="text" pInputText id="uniteNom" [(ngModel)]="uniteEdit.unite_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !uniteNom}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !uniteNom">Name is required.</small>
+                                </div>
+                                <div class="field">
+                                    <label for="name">Code</label>
+                                    <input type="text" pInputText id="uniteCode" [(ngModel)]="uniteEdit.unite_code" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !uniteCode}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !uniteCode">Name is required.</small>
+                                </div>
+                
+                                <div class="field">
+                                    <label for="status">Métrologie</label>
+                                    <p-dropdown [(ngModel)]="uniteEdit.vol_id" optionValue="volId" optionLabel="volNom" [options]="volumes" placeholder="Select">
+                                    </p-dropdown>
+                                </div>
+                
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveUnite2(uniteEdit.unite_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+            </div>
+            </p-tabPanel>
+            <p-tabPanel header="Produits" class="line-height-3 m-0">                
+                <div class="grid">
+                <div class="col-12">
+                    <div class="">
+                        <p-toast></p-toast>
+                        <p-toolbar styleClass="mb-4">
+                            <ng-template pTemplate="left">
+                                <div class="my-2">
+                                    <button pButton pRipple label="Ajouter un type de produit" icon="pi pi-plus" class="p-button-success mr-2" (click)="createNewProduct()"></button>
+                                </div>
+                            </ng-template>
+            
+                        </p-toolbar>
+            
+                        <p-table #dt [value]="bagages" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Gestion des produits</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="tbg_nom">Nom <p-sortIcon field="tbg_nom"></p-sortIcon></th>
+                                    <th pSortableColumn="unite_id">Unité <p-sortIcon field="unite_id"></p-sortIcon></th>
+                                    <th>Actions</th>
+                                    <th>Observations</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-bagage>
+                                <tr>
+                                    <td style="width:25%; min-width:10rem;">
+                                        {{bagage.tbg_nom}}
+                                    </td>
+                                    <td style="width:15%; min-width:10rem;">
+                                        {{bagage.unite.unite_nom}}
+                                    </td>
+                                    <td style="width:5%; min-width:10rem;">
+                                        <div class="flex">
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifBagage(bagage)">
+                                                <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                            </button>                                                
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td style="width:40%; min-width:10rem;">
+                                        <!-- Utilisation des badges avec PrimeNG pour les différentes conditions -->
+                                        <ng-container *ngIf="bagage.volume.volId === 1">
+                                            <p-badge value="Bagage à décompter / mesurer" severity="success"></p-badge>
+                                        </ng-container>
+                                        <ng-container *ngIf="bagage.volume.volId === 2">
+                                            <p-badge value="Bagage à peser" severity="warning"></p-badge>
+                                        </ng-container>
+                                        <ng-container *ngIf="bagage.volume.volId === 3">
+                                            <p-badge value="Bagage à dimensionner" severity="danger"></p-badge>
+                                        </ng-container>
+
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+            
+                    <p-dialog [(visible)]="typeproductDialog" [style]="{width: '450px', height:'600px'}" header="Ajouter un nouveau type de produit" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="bagageCreate.tbg_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>
+            
+                            <div class="field">
+                                <label for="status">Unité</label>
+                                <p-dropdown [(ngModel)]="bagageCreate.unite_id" optionValue="unite_id" optionLabel="unite_nom" [options]="unites" placeholder="Select">
+                                    <ng-template let-unite pTemplate="item">
+                                        <span>{{unite.unite_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveTypeBagage()"></button>
+                        </ng-template>
+                    </p-dialog>
+
+                    <p-dialog [(visible)]="typebagageEdit" [style]="{width: '450px', height:'600px'}" header="Modifier un type de produit" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="bagageEdit.tbg_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>
+            
+                            <div class="field">
+                                <label for="status">Unité</label>
+                                <p-dropdown [(ngModel)]="bagageEdit.unite_id" optionValue="unite_id" optionLabel="unite_nom" [options]="unites" placeholder="Select">
+                                    <ng-template let-unite pTemplate="item">
+                                        <span>{{unite.unite_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                             <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveTypesBagage2(bagageEdit.tbg_id)"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span>Are you sure you want to delete selected products?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                        </ng-template>
+                    </p-dialog>
+                </div>
+            </div>
+            </p-tabPanel>
+
+
+            <p-tabPanel header="Niveaux" class="line-height-3 m-0">                
+                <div class="grid">
+                <div class="col-12">
+                    <div class="">
+                        <p-toast></p-toast>
+                        <p-toolbar styleClass="mb-4">
+                            <ng-template pTemplate="left">
+                                <div class="my-2">
+                                    <button pButton pRipple label="Ajouter un niveau de place" icon="pi pi-plus" class="p-button-success mr-2" (click)="createNewNiveau()"></button>
+                                </div>
+                            </ng-template>
+            
+                        </p-toolbar>
+            
+                        <p-table #dt [value]="niveaux" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Gestion des niveaux</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="unite_id">Niveau <p-sortIcon field="unite_id"></p-sortIcon></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-niveau>
+                                <tr>
+                                    <td style="width:15%; min-width:10rem;">
+                                        {{niveau.niv_nom}}
+                                    </td>
+                                    <td style="width:5%; min-width:10rem;">
+                                        <div class="flex">
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifNiveau(niveau)">
+                                                <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                            </button>                                                
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+            
+                    <p-dialog [(visible)]="niveauDialog" [style]="{width: '450px'}" header="Ajouter un niveau de place" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="niveauCreate.niv_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>
+            
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveNiveau()"></button>
+                        </ng-template>
+                    </p-dialog>
+
+                    <p-dialog [(visible)]="typeniveauEdit" [style]="{width: '450px'}" header="Modifier un niveau de place" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="niveauEdit.niv_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !name">Name is required.</small>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveNiveau2(niveauEdit.niv_id)"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span>Are you sure you want to delete selected products?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                        </ng-template>
+                    </p-dialog>
+                </div>
+            </div>
+            </p-tabPanel>
+
+            <p-tabPanel header="Pièces d'identité" class="line-height-3 m-0">                
+                <div class="grid">
+                <div class="col-12">
+                    <div class="">
+                        <p-toast></p-toast>
+                        <p-toolbar styleClass="mb-4">
+                            <ng-template pTemplate="left">
+                                <div class="my-2">
+                                    <button pButton pRipple label="Ajouter une nouvelle pièce" icon="pi pi-plus" class="p-button-success mr-2" (click)="createNewTypePiece()"></button>
+                                </div>
+                            </ng-template>
+            
+                        </p-toolbar>
+            
+                        <p-table #dt [value]="typePieces" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Gestion des pièces d'identité</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Pièce</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-typePiece>
+                                <tr>
+                                    <td style="width:15%; min-width:10rem;">
+                                        {{typePiece.tpiece_nom}}
+                                    </td>
+                                    <td style="width:5%; min-width:10rem;">
+                                        <div class="flex">
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifTypePiece(typePiece)">
+                                                <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                            </button>                                                
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+            
+                    <p-dialog [(visible)]="typepieceDialog" [style]="{width: '450px'}" header="Ajouter une nouvelle pièce" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="typePieceCreate.tpiece_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>            
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveTypePiece()"></button>
+                        </ng-template>
+                    </p-dialog>
+
+                    <p-dialog [(visible)]="typepieceEdit" [style]="{width: '450px'}" header="Modifier une pièce" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="typePieceEdit.tpiece_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !name">Name is required.</small>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveTypePiece2(typePieceEdit.tpiece_id)"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span>Are you sure you want to delete selected products?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                        </ng-template>
+                    </p-dialog>
+                </div>
+            </div>
+            </p-tabPanel>
+
+            <p-tabPanel header="Port" class="line-height-3 m-0">                
+                <div class="grid">
+                <div class="col-12">
+                    <div class="">
+                        <p-toast></p-toast>
+                        <p-toolbar styleClass="mb-4">
+                            <ng-template pTemplate="left">
+                                <div class="my-2">
+                                    <button pButton pRipple label="Ajouter une nouvelle ville" icon="pi pi-plus" class="p-button-success mr-2" (click)="createNewVille()"></button>
+                                </div>
+                            </ng-template>
+            
+                        </p-toolbar>
+            
+                        <p-table #dt [value]="villes" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Gestion des ports (villes)</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="unite_id">Niveau <p-sortIcon field="unite_id"></p-sortIcon></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-ville>
+                                <tr>
+                                    <td style="width:15%; min-width:10rem;">
+                                        {{ville.vil_nom}}
+                                    </td>
+                                    <td style="width:5%; min-width:10rem;">
+                                        <div class="flex">
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifVille(ville)">
+                                                <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                            </button>                                                
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2">
+                                                <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+            
+                    <p-dialog [(visible)]="villeDialog" [style]="{width: '450px'}" header="Ajouter une nouvelle ville" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="villeCreate.vil_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>
+                            <div class="field">
+                                <label for="name">Code</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="villeCreate.vil_code" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !product.name">Name is required.</small>
+                            </div>
+            
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveVille()"></button>
+                        </ng-template>
+                    </p-dialog>
+
+                    <p-dialog [(visible)]="villesEdit" [style]="{width: '450px'}" header="Modifier une ville" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="villeEdit.vil_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !name">Name is required.</small>
+                            </div>
+                            <div class="field">
+                                <label for="name">Code</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="villeEdit.vil_code" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !name">Name is required.</small>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Sauver" icon="pi pi-check" class="p-button-text" (click)="saveVille2(villeEdit.vil_id)"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span>Are you sure you want to delete selected products?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                        </ng-template>
+                    </p-dialog>
+                </div>
+            </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>

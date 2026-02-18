@@ -1,0 +1,192 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-tabView>
+              <p-tabPanel *ngFor="let situ of getFacturesByState_" [header]="situ.statut">
+                <p-table #dt [value]="situ.factures" scrollable="true" scrollHeight="400px" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['fact_code', 'date_facturation', 'montant_facture', 'firstname', 'lastname', 'telephone']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                  <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Situation des factures en compte</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                  </ng-template>
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Code Facture</th>
+                      <th>Date Facture</th>
+                      <th>Montant HT Dû</th>
+                      <th>Echéance</th>
+                      <th>Client</th>
+                      <th>Actions</th>
+                    </tr>
+                  </ng-template>
+            
+                  <ng-template pTemplate="body" let-facture>
+                    <tr>
+                      <td>{{ facture.fact_code }}</td>
+                      <td>{{ facture.date_facturation | date:'dd/MM/yyyy' }}</td>
+                      <td>{{ facture.montant_facture | currency:'XOF':'symbol':'1.0-0' }}</td>
+                      <td>{{ facture.date_echeance | date:'dd/MM/yyyy' }}</td>
+                      <td>{{ getRaisonSocialById(facture.id_cltcmpt) }}</td>
+                      <td>
+                        <button pButton pRipple iconPos="left" class="p-button-rounded p-button-primary mr-2" (click)="editFacture(facture)">
+                          <i class="pi pi-money-bill" style="margin-right: 8px;"></i>Effectuer le réglement
+                        </button>  
+
+                        <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="deleteFacture(facture)">
+                          <i class="pi pi-print" style="margin-right: 8px;"></i>Reçu
+                        </button>   
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </p-tabPanel>
+            </p-tabView>
+            
+            
+        </div>
+
+        <p-dialog [(visible)]="productDialog3" [style]="{width: '1050px'}" header="Traitement de la facture" [modal]="true" class="p-fluid">
+          <ng-template pTemplate="content">
+              <div class="col-md-6">
+                  <!-- Raison sociale -->
+                  <div class="formgrid grid">
+                    <div class="field col-6">
+                      <label for="raisonSocial">Raison sociale</label>
+                      <p-dropdown [disabled]="true" id="modergltId" [(ngModel)]="facturationEdit.id_cltcmpt" [options]="clientEnComptes"
+                        optionLabel="raisonSocial" optionValue="cltcmptId" placeholder="Sélectionner un client en compte" (onChange)="onClientSelected($event.value)">
+                      </p-dropdown>
+                    </div>
+
+					<div class="field col-3">
+						<h5>
+							Facture N° : <br/>{{facturationEdit.fact_code}}
+						</h5>
+					</div>
+					
+                  </div>
+                
+                  <!-- Prénom & Nom -->
+                  <div class="formgrid grid">
+                    <div class="field col-4">
+                      <label for="firstnameContact">Prénom(s) du contact</label>
+                      <input readonly type="text" id="firstnameContact" [(ngModel)]="facturationEdit.firstname" name="firstnameContact" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.firstnameContact}" />
+                      <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.firstnameContact">Prénom(s) obligatoire</small>
+                    </div>
+                    <div class="field col-2">
+                      <label for="lastnameContact">Nom du contact</label>
+                      <input readonly type="text" id="lastnameContact" [(ngModel)]="facturationEdit.lastname" name="lastnameContact" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.lastnameContact}" />
+                       </div>
+					   <div class="field col-3">
+
+					   </div>
+					
+					   <div class="field col-3">
+						<label for="raisonSocial">Type de réglement</label>
+						<p-dropdown [(ngModel)]="facturationEdit.clt_tr" [options]="TypeReglements"
+						  optionLabel="libelle_typeReglm" optionValue="typerglt_id" placeholder="Sélectionner un type de réglement">
+						</p-dropdown>
+					  </div>
+                  </div>
+                
+                  <!-- Téléphone & Email -->
+                  <div class="formgrid grid">
+                    <div class="field col-2">
+                      <label for="contact">Téléphone du contact</label>
+                      <input readonly type="text" id="contact" [(ngModel)]="facturationEdit.telephone" name="contact" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.contact}" />
+                      </div>
+                    <div class="field col-4">
+                      <label for="mail">Email du contact</label>
+                      <input readonly type="text" id="mail" [(ngModel)]="facturationEdit.adresse" name="mail" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.mail}" />
+                    </div>
+					<div class="field col-3">
+						
+					</div>
+					<div class="field col-3">
+					  <label for="mail">Montant versé</label>
+					  <input type="text" id="mail" [(ngModel)]="facturationEdit.montant_verse" name="mail" pInputText required
+						[ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.mail}" />
+					  </div>
+
+					 
+                  </div>
+                
+                  <!-- Comptes comptables -->
+                  <div class="formgrid grid">
+                    <div class="field col-3">
+                      <label for="cptgen_compta">Libellé</label>
+                      <input readonly type="text" id="cptgen_compta" [(ngModel)]="facturationEdit.libelle" name="cptgen_compta" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.cptgen_compta}" />
+                      </div>
+                    <div class="field col-3">
+                      <label for="cpttiers_compta">Observations</label>
+                      <input readonly type="text" id="cpttiers_compta" [(ngModel)]="facturationEdit.observation" name="cpttiers_compta" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.cpttiers_compta}" />
+                      </div>
+					  <div class="field col-3">
+						
+					  </div>
+					  <div class="field col-3">
+						<label for="mail">Référence du réglement</label>
+						<input type="text" id="mail" [(ngModel)]="facturationEdit.ref_paieFacture" name="mail" pInputText required
+						  [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.mail}" />
+						</div>
+                  </div>
+                
+              </div>
+
+              <div class="col-md-6">
+                  <p-table #dt [value]="ligneFactDetailsEdit" [columns]="cols" scrollable="true" scrollHeight="400px" responsiveLayout="scroll" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="ligneFactDetailsEdit" [rowHover]="true" dataKey="id">
+                             
+                      <ng-template pTemplate="header">
+                          <tr>
+                              <th pSortableColumn="code">Description</th>
+                              <th pSortableColumn="inventoryStatus">Montant HT</th>
+                          </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-lignefd>
+                          <tr>
+                              <td style="width:70%; min-width:10rem;">
+                                  <span class="p-column-title">Name</span>
+                                  {{lignefd.description_ligne}}
+                              </td>
+                              <td style="width:20%; min-width:8rem;">
+                                  <span class="p-column-title">Price</span>
+                                  {{lignefd.montant_ligne}}
+                              </td>                                      
+                          </tr>
+                      </ng-template>
+                  </p-table>
+
+              </div>
+                
+          </ng-template>
+
+          <ng-template pTemplate="footer">
+			  <button pButton pRipple iconPos="left" class="p-button-rounded p-button-success" (click)="savePayment()">
+				<i class="pi pi-check" style="margin-right: 8px;"></i>Valider le paiement
+			  </button>  
+          </ng-template>
+      </p-dialog>
+
+        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+    </div>
+</div>

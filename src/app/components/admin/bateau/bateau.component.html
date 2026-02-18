@@ -1,0 +1,217 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Ajouter un nouveau bateau" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        </div>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="bateaux" responsiveLayout="scroll" [globalFilterFields]="['bat_ref','country.name','representative.name','status']" [rows]="5" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="bateau.batId">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Gestion des bateaux</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="bat_ref">Code<p-sortIcon field="bat_ref"></p-sortIcon></th>
+                        <th pSortableColumn="bat_nom">Nom Bateau<p-sortIcon field="bat_nom"></p-sortIcon></th>
+                        <th pSortableColumn="owner">Gestionnaire</th>
+                        <th pSortableColumn="places">Places </th>
+                        <th>Action</th>
+                        <th> 
+                            <p-badge value="Chaise" severity="success" />
+                            <p-badge value="Cabine 2" severity="info" />
+                            <p-badge value="Cabine 4" severity="warning"/>
+                            <p-badge value="Cabine 8" severity="danger"/></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-bateau>
+                    <tr [ngStyle]="{'background-color': bateau.bat_etat ? '#d4edda' : '#f8d7da'}">
+                        <td style="width:10%; min-width:10rem;">
+                            {{bateau.bat_ref}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            {{bateau.bat_nom}}
+                        </td>
+                   
+                        <td style="width:20%; min-width:8rem;">
+                            {{ bateau.agence?.agc_nom }}
+                            
+                        </td>
+                        <td style="width:10%; min-width:10rem;">
+                            {{countByTypePerBateau[bateau.bat_id]?.type1 + countByTypePerBateau[bateau.bat_id]?.type2 + 
+                            countByTypePerBateau[bateau.bat_id]?.type3 + countByTypePerBateau[bateau.bat_id]?.type4}}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" (click)="editProduct(bateau)"></button>
+                                <!--<button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger mr-2" (click)="deleteProduct(product)"></button>-->
+                                <button pButton pRipple icon="pi pi-check" class="p-button-rounded p-button-help mr-2" (click)="stateBateau(bateau)"></button>
+                            </div>
+                        </td>
+                        <td>
+                         
+                                <p-badge value="{{countByTypePerBateau[bateau.bat_id]?.type1 || 0 }}" severity="success" class="mr-2"/>
+                                <p-badge value="{{countByTypePerBateau[bateau.bat_id]?.type2 || 0 }}" severity="info" class="mr-2"/>
+                                <p-badge value="{{countByTypePerBateau[bateau.bat_id]?.type3 || 0 }}" severity="warning" class="mr-2"/>
+                                <p-badge value="{{countByTypePerBateau[bateau.bat_id]?.type4 || 0 }}" severity="danger"/>
+                        
+
+                             </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Création d'un bateau" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="name">Référence</label>
+                    <input type="text" pInputText id="batRef" [(ngModel)]="bateauCreate.bat_ref" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !batRef}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !batRef">Name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="name">Nom</label>
+                    <input type="text" pInputText id="batNom" [(ngModel)]="bateauCreate.bat_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !batNom}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !batNom">Name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="description">Description</label>
+                    <textarea id="batDesc" pInputTextarea [(ngModel)]="bateauCreate.bat_desc" required rows="3" cols="20"></textarea>
+                </div>
+                <div class="field">
+                    <label for="name">Nombre de places</label>
+                    <input type="text" pInputText id="batNbplace" [(ngModel)]="bateauCreate.bat_nbplace" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !batNbplace}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !batNbplace">Name is required.</small>
+                </div>
+
+                <div class="field">
+                    <label for="status">Gestion par</label>
+                    <p-dropdown [(ngModel)]="bateauCreate.agc_id" optionValue="agc_id" optionLabel="agc_nom" [options]="agences" placeholder="Choisir..." appendTo="body">
+                        <ng-template let-agence pTemplate="item">
+                            <span>{{agence.agc_nom}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+
+                <div class="field">
+                    <label for="status">Marqueur</label><br/>
+                    <p-colorPicker [(ngModel)]="bateauCreate.bat_markeur"/>                     
+                </div>
+                
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveProduct()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog2" [style]="{width: '450px', height: '650px'}" header="Modifier un bateau" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="name">Référence</label>
+                    <input type="text" pInputText id="batRef" [(ngModel)]="bateauEdit.bat_ref" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !batRef}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !batRef">Name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="name">Nom</label>
+                    <input type="text" pInputText id="batNom" [(ngModel)]="bateauEdit.bat_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !batNom}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !batNom">Name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="description">Description</label>
+                    <textarea id="batDesc" pInputTextarea [(ngModel)]="bateauEdit.bat_desc" required rows="3" cols="20"></textarea>
+                </div>
+
+                <div class="field">
+                    <label for="status">Gestion actuelle</label>
+                    <p-dropdown [(ngModel)]="bateauEdit.agc_id" optionLabel="agc_nom" optionValue="agc_id" [options]="agences" placeholder="Choisir..." appendTo="body">
+                        <ng-template let-agence pTemplate="item">
+                            <span>{{agence.agc_nom}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+
+                <div class="field">
+                    <label for="status">Marqueur</label><br/>
+                    <p-colorPicker [(ngModel)]="bateauEdit.bat_markeur"/>                     
+                </div>
+
+                <!--
+                <div class="field">
+                    <label for="status">Photo du bateau - {{bateau.bat_nom}}</label>
+                    <div class="image-upload-container">
+                        <img [src]="bateau.imageUrl || 'assets/tof.jpg'" alt="Photo du bateau" width="200" class="mb-2">
+                        
+                        <input type="file" id="fileInput-{{bateau.bat_id}}" (change)="onFileSelected2($event, bateau.bat_id)" hidden>
+                        
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <div class="my-2">
+                                <button pButton pRipple (click)="chooseFile2(bateau.bat_id)" class="p-button-info mb-2">Choisir</button>
+                                <button pButton pRipple (click)="uploadFile2(bateau.bat_id)" [disabled]="!selectedFile2[bateau.bat_id]" class="p-button-success mb-2">Charger</button>
+                                <button pButton pRipple (click)="cancelUpload2(bateau.bat_id)" class="p-button-warning mb-2">Annuler</button>
+                            </div>
+                        </div>
+
+                        <div *ngIf="uploadedFiles[bateau.bat_id]?.length > 0">
+                        <h3>Fichiers Téléchargés:</h3>
+                        <ul>
+                            <li *ngFor="let file of uploadedFiles[bateau.bat_id]">
+                            Nom: {{file.name}} - Taille: {{file.size}} bytes
+                            </li>
+                        </ul>
+                        </div>
+                    </div>                     
+                </div>-->
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveProduct2(bateauEdit.bat_id)">
+                </button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <!--
+        <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>Are you sure you want to delete selected products?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+            </ng-template>
+        </p-dialog>-->
+
+        <p-dialog [(visible)]="stateBateauDialog" header="Confirmation" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>Etes vous sûr de vouloir désactiver le bateau <br/> <b>{{bateau.bat_nom}}</b> ?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="stateBateauDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="confirmDisablesSelected()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>

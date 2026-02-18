@@ -1,0 +1,904 @@
+<div class="col-12">
+    <div class="card">
+        <p-tabView orientation="left">
+            <p-tabPanel header="Manifeste passagers ADULTE" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange()" [(ngModel)]="selectedVoyage" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste passagers Adulte" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="datamanifesteAdulte" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Manifeste Adulte CARABANE</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° de billet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nom complet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Identité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Sexe<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nationnalité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Type place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Niveau<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">N° de place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-datamanifesteAdulte>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{datamanifesteAdulte.bilCode}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet</span>
+                                            {{datamanifesteAdulte.firstname}}<br/>
+                                            {{datamanifesteAdulte.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Identité</span>
+                                            {{datamanifesteAdulte.typePieceId}}<br/>
+                                            {{datamanifesteAdulte.numeropiece}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Sexe</span>
+                                            {{datamanifesteAdulte.civilite}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nationalité</span>
+                                            {{datamanifesteAdulte.natId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Type place</span>
+                                            {{datamanifesteAdulte.typePlaceId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Niveau</span>
+                                            {{datamanifesteAdulte.plcId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de place</span>
+                                            {{datamanifesteAdulte.plcId}}
+                                        </td> 
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="printDialog" [style]="{width: '1050px'}" header="Impression du manifeste passagers ADULTE" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>MANIFESTE PASSAGERS ADULTE CARABANE</h2>
+                                        <p style="text-align: right;">Ligne : {{selectedVoyage | infovoyage5: voyages : villes}}</p>
+                                    </div>
+                                    <p style="text-align: center;"><b>Manifeste Passager ADULTE {{selectedVoyage | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Billet</th>
+                                                <th>Nom</th>
+                                                <th>Identité</th>
+                                                <th>Sexe</th>
+                                                <th>Nationalité</th>
+                                                <th>Type place (Numéro)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let m of datamanifesteAdulte">
+                                            <tr>
+                                                <td>{{m.bilCode}}</td>
+                                                <td>{{m.firstname}} {{m.lastname}}</td>
+                                                <td>{{m.numeropiece}}</td>
+                                                <td>{{m.civilite}}</td>
+                                                <td>{{m.natId}}</td>
+                                                <td>{{m.typePieceId}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Manifeste passagers ENFANT" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange2()" [(ngModel)]="selectedVoyage2" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste passagers Enfant" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew2()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="datamanifesteEnfant" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Manifeste Enfant CARABANE</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° de billet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nom complet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Identité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Sexe<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nationnalité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Type place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Niveau<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">N° de place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-datamanifesteEnfant>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{datamanifesteAdulte.bilCode}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet</span>
+                                            {{datamanifesteAdulte.firstname}}<br/>
+                                            {{datamanifesteAdulte.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Identité</span>
+                                            {{datamanifesteAdulte.typePieceId}}<br/>
+                                            {{datamanifesteAdulte.numeropiece}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Sexe</span>
+                                            {{datamanifesteAdulte.civilite}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nationalité</span>
+                                            {{datamanifesteAdulte.natId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Type place</span>
+                                            {{datamanifesteAdulte.typePlaceId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Niveau</span>
+                                            {{datamanifesteAdulte.plcId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de place</span>
+                                            {{datamanifesteAdulte.plcId}}
+                                        </td> 
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="printDialog2" [style]="{width: '1050px'}" header="Impression du manifeste passagers ENFANT" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>MANIFESTE PASSAGERS ENFANT CARABANE</h2>
+                                       <p style="text-align: right;">Ligne : {{selectedVoyage2 | infovoyage5: voyages : villes}}</p>
+                                    </div>
+                                    <p style="text-align: center;"><b>Manifeste Passager ENFANT {{selectedVoyage2 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage2 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Billet</th>
+                                                <th>Nom</th>
+                                                <th>Identité</th>
+                                                <th>Sexe</th>
+                                                <th>Nationalité</th>
+                                                <th>Type place (Numéro)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let m of datamanifesteEnfant">
+                                            <tr>
+                                                <td>{{m.bilCode}}</td>
+                                                <td>{{m.firstname}} {{m.lastname}}</td>
+                                                <td>{{m.numeropiece}}</td>
+                                                <td>{{m.civilite}}</td>
+                                                <td>{{m.natId}}</td>
+                                                <td>{{m.typePieceId}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Manifeste passagers BEBE" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange3()" [(ngModel)]="selectedVoyage3" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste passagers Bébé" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew3()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="datamanifesteBebe" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Manifeste Bébé CARABANE</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>N° de billet</th>
+                                        <th>Nom complet du parent</th>
+                                        <th>Nom complet du bébé</th>
+                                        <th>N° de place</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-datamanifesteBebe>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{datamanifesteBebe.bilCode}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet du parent</span>
+                                            {{datamanifesteBebe.firstname}}<br/>
+                                            {{datamanifesteBebe.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet du bébé</span>
+                                            {{datamanifesteBebe.enfNomComplet}} ({{datamanifesteBebe.enfAge}} {{datamanifesteBebe.uniteTemps}})
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de place</span>
+                                            {{datamanifesteBebe.plcId}}
+                                        </td> 
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="printDialog3" [style]="{width: '1050px'}" header="Impression du manifeste passagers BEBE" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>MANIFESTE PASSAGERS BEBE CARABANE</h2>
+                                        <p style="text-align: right;">Ligne : {{selectedVoyage3 | infovoyage5: voyages : villes}}</p>
+                                    </div>
+                                    <p style="text-align: center;"><b>Manifeste Passager BEBE {{selectedVoyage3 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage3 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° de billet</th>
+                                                <th>Nom complet du parent</th>
+                                                <th>Nom complet du bébé</th>
+                                                <th>N° de place</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let m of datamanifesteBebe">
+                                            <tr>
+                                                <td>{{m.bilCode}}</td>
+                                                <td>{{m.firstname}} {{m.lastname}}</td>
+                                                <td>{{m.enfNomComplet}} ({{m.enfAge}} {{m.uniteTemps}})</td>
+                                                <td>{{datamanifesteBebe.plcId}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Manifeste passagers NON EMBARQUES" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange4()" [(ngModel)]="selectedVoyage4" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="type-places" class="label-red" style="display: block; margin-bottom: 5px;">Selectionnez un type de place :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange4_()" [(ngModel)]="selectedTypePlace" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-typePlace pTemplate="item">
+                                            <span>{{typePlace.tplc_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste passagers des Non Embarqués" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew4()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="dataFounds" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Manifeste Passagers Non Embarqués CARABANE</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° de billet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nom complet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Identité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Sexe<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nationnalité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Type place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Niveau<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">N° de place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-dataFound>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{dataFound.bilCode}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet</span>
+                                            {{dataFound.firstname}}<br/>
+                                            {{dataFound.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Identité</span>
+                                            {{dataFound.typePieceId}}<br/>
+                                            {{dataFound.numeropiece}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Sexe</span>
+                                            {{dataFound.civilite}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nationalité</span>
+                                            {{dataFound.natId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Type place</span>
+                                            {{dataFound.typePlaceId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Niveau</span>
+                                            {{dataFound.plcId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de place</span>
+                                            {{dataFound.plcId}}
+                                        </td> 
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="printDialog4" [style]="{width: '1050px'}" header="Impression du manifeste passagers NON EMBARQUES" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>MANIFESTE PASSAGERS NON EMBARQUES CARABANE</h2>
+                                        <p style="text-align: right;">Ligne : {{selectedVoyage4 | infovoyage5: voyages : villes}}</p>
+                                    </div>
+                                    <p style="text-align: center;"><b>Manifeste Passager NON EMBARQUES {{selectedVoyage4 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage4 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Billet</th>
+                                                <th>Nom</th>
+                                                <th>Identité</th>
+                                                <th>Sexe</th>
+                                                <th>Nationalité</th>
+                                                <th>Type place (Numéro)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let m of dataFounds">
+                                            <tr>
+                                                <td>{{m.bilCode}}</td>
+                                                <td>{{m.firstname}} {{m.lastname}}</td>
+                                                <td>{{m.numeropiece}}</td>
+                                                <td>{{m.civilite}}</td>
+                                                <td>{{m.natId}}</td>
+                                                <td>{{m.typePieceId}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Manifeste des billets REPORTES" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange5()" [(ngModel)]="selectedVoyage5" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="type-places" class="label-red" style="display: block; margin-bottom: 5px;">Selectionnez un type de place :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange5_()" [(ngModel)]="selectedTypePlace2" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-typePlace pTemplate="item">
+                                            <span>{{typePlace.tplc_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste des billets reportés" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew5()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="dataFounds_" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Manifeste des billets reportés CARABANE</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° de billet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nom complet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Identité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Sexe<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nationnalité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Type place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Niveau<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">N° de place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-dataFound_>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{dataFound_.bilCode}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet</span>
+                                            {{dataFound_.firstname}}<br/>
+                                            {{dataFound_.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Identité</span>
+                                            {{dataFound_.typePieceId}}<br/>
+                                            {{dataFound_.numeropiece}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Sexe</span>
+                                            {{dataFound_.civilite}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nationalité</span>
+                                            {{dataFound_.natId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Type place</span>
+                                            {{dataFound_.typePlaceId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Niveau</span>
+                                            {{dataFound_.plcId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de place</span>
+                                            {{dataFound_.plcId}}
+                                        </td> 
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="printDialog5" [style]="{width: '1050px'}" header="Impression du manifeste passagers REPORTES" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>MANIFESTE DES BILLETS REPORTES CARABANE</h2>
+                                        <p style="text-align: right;">Ligne : {{selectedVoyage5 | infovoyage5: voyages : villes}}</p>
+                                    </div>
+                                    <p style="text-align: center;"><b>Manifeste des billets REPORTES {{selectedVoyage5 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage5 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Billet</th>
+                                                <th>Nom</th>
+                                                <th>Identité</th>
+                                                <th>Sexe</th>
+                                                <th>Nationalité</th>
+                                                <th>Type place (Numéro)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let m of dataFounds_">
+                                            <tr>
+                                                <td>{{m.bilCode}}</td>
+                                                <td>{{m.firstname}} {{m.lastname}}</td>
+                                                <td>{{m.numeropiece}}</td>
+                                                <td>{{m.civilite}}</td>
+                                                <td>{{m.natId}}</td>
+                                                <td>{{m.typePieceId}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Rapport PAX" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange6()" [(ngModel)]="selectedVoyage6" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="type-places" class="label-red" style="display: block; margin-bottom: 5px;">Selectionnez un type de place :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange6_()" [(ngModel)]="selectedTypePlace3" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-typePlace pTemplate="item">
+                                            <span>{{typePlace.tplc_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le rapport PAX" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew6()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="dataFounds__" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Rapport PAX CARABANE</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° de billet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nom complet<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Identité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Sexe<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Nationnalité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Type place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Niveau<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">N° de place<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Téléphone<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-dataFound__>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{dataFound__.bilCode}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nom complet</span>
+                                            {{dataFound__.firstname}}<br/>
+                                            {{dataFound__.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Identité</span>
+                                            {{dataFound__.typePieceId}}<br/>
+                                            {{dataFound__.numeropiece}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Sexe</span>
+                                            {{dataFound__.civilite}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Nationalité</span>
+                                            {{dataFound__.natId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Type place</span>
+                                            {{dataFound__.typePlaceId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Niveau</span>
+                                            {{dataFound__.plcId}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de place</span>
+                                            {{dataFound__.plcId}}
+                                        </td> 
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Téléphone</span>
+                                            {{dataFound__.phone}}
+                                        </td> 
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="printDialog6" [style]="{width: '1050px'}" header="Pré-print du rapport PAX" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>RAPPORT PAX CARABANE</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage6 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>RAPPORT PAX {{selectedVoyage6 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage6 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Billet</th>
+                                                <th>Nom</th>
+                                                <th>Identité</th>
+                                                <th>Sexe</th>
+                                                <th>Nationalité</th>
+                                                <th>Type place (Numéro)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let m of dataFounds_">
+                                            <tr>
+                                                <td>{{m.bilCode}}</td>
+                                                <td>{{m.firstname}} {{m.lastname}}</td>
+                                                <td>{{m.numeropiece}}</td>
+                                                <td>{{m.civilite}}</td>
+                                                <td>{{m.natId}}</td>
+                                                <td>{{m.typePieceId}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+           
+        </p-tabView>
+    </div>
+</div>
