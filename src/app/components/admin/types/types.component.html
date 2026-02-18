@@ -15,7 +15,7 @@
                                 </ng-template>
                             </p-toolbar>
                 
-                            <p-table #dt [value]="agences" [columns]="cols1" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
+                            <p-table #dt [value]="agences" [columns]="cols1" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['agc_nom']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
                                 <ng-template pTemplate="caption">
                                     <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                                         <h5 class="m-0">Gestion des agences</h5>
@@ -27,7 +27,7 @@
                                 </ng-template>
                                 <ng-template pTemplate="header">
                                     <tr>
-                                        <th pSortableColumn="code">Nom de l'agence <p-sortIcon field="agcNom"></p-sortIcon></th>
+                                        <th>Nom de l'agence</th>
                                         <th pSortableColumn="agcTel">Téléphone <p-sortIcon field="agcTel"></p-sortIcon></th>
                                         <th pSortableColumn="agcFax">Fax <p-sortIcon field="agcFax"></p-sortIcon></th>
                                         <th pSortableColumn="agcResp">Responsable <p-sortIcon field="agcResp"></p-sortIcon></th>

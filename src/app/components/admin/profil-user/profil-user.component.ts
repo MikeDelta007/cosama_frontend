@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { AppMainComponent } from 'src/app/app.main.component';
@@ -26,13 +26,31 @@ import { ProfilsdroituserService } from 'src/app/services/profilsdroituser.servi
 import { TypeService } from 'src/app/services/type.service';
 import { UserService } from 'src/app/services/user.service';
 
+import * as yup from 'yup';
+
+const userSchema = yup.object({
+  usr_login: yup.string().required("Login obligatoire").min(3, "Login doit contenir au moins 3 caractères"),
+  password: yup.string().required("Mot de passe obligatoire").min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+  usr_firstname: yup.string().required("Prénom obligatoire"),
+  usr_lastname: yup.string().required("Nom obligatoire"),
+  usr_desc: yup
+    .string()
+    .required("Téléphone obligatoire")
+    .matches(/^[0-9]{9,15}$/, "Numéro invalide"),
+  agc_id: yup.number().required("Agence obligatoire"),
+  prfl_id: yup.number().required("Profil obligatoire"),
+});
+
 @Component({
   selector: 'app-profil-user',
   templateUrl: './profil-user.component.html',
     providers: [MessageService, ConfirmationService],
   styleUrls: ['./profil-user.component.scss']
 })
-export class ProfilUserComponent {
+
+export class ProfilUserComponent implements OnInit {
+
+  errors: { [key: string]: string } = {};
 
   valuePswd : string = "";
 
@@ -101,6 +119,7 @@ export class ProfilUserComponent {
   users : Utilisateur[] = [];
 
   agences : Agence[] = [];
+  
 
     public sms : SMS = {
     signature: '',
@@ -458,12 +477,17 @@ export class ProfilUserComponent {
         }
       );
 
-      this.profilDroitsUser.getUsers().subscribe((response:any) => 
-        {
-        this.users = response;
+      this.profilDroitsUser.getUsers().subscribe((response:any) => {
+        this.users = response.map(u => ({
+          ...u,
+          agc_nom: this.agences.find(a => a.agc_id === u.agc_id)?.agc_nom || '',
+          prfl_libelle: this.profils.find(p => p.prfl_id === u.prfl_id)?.prfl_libelle || ''
+        }));
+
         console.log(this.users);
-        }
-      );
+      });
+
+      
 
 
       this.agenceService.getAgences().subscribe((response:any) => 
@@ -490,11 +514,12 @@ export class ProfilUserComponent {
         { field: 'actions', header: 'Actions' }
     ];
 
-    this.cols2 = [
-        { field: 'libelle', header: 'Libellé' },
-        { field: 'code', header: 'Code' },
-        { field: 'actions', header: 'Actions' }
-    ];
+      this.cols2 = [
+        { field: 'usr_firstname', header: 'Prénom (s)' },
+        { field: 'usr_lastname', header: 'Nom' },
+        { field: 'agc_nom', header: 'Agence' },
+        { field: 'prfl_libelle', header: 'Profil' }
+      ];
 
       this.statuses = [
           { label: 'INSTOCK', value: 'instock' },
@@ -504,6 +529,21 @@ export class ProfilUserComponent {
 
       this.user = this.appMain.user.login;
   }
+  
+
+  async getAllUsers() {
+      this.profilDroitsUser.getUsers().subscribe((response:any) => {
+      this.users = response.map(u => ({
+        ...u,
+        agc_nom: this.agences.find(a => a.agc_id === u.agc_id)?.agc_nom || '',
+        prfl_libelle: this.profils.find(p => p.prfl_id === u.prfl_id)?.prfl_libelle || ''
+      }));
+
+      console.log(this.users);
+    });
+
+  }
+
 
   openDesactivUser(user : UtilisateurBis) 
   {
@@ -598,6 +638,7 @@ export class ProfilUserComponent {
     //this.bateauCreate = {};
 
   } 
+  
 
   updateLibProf(id:number)
   {
@@ -667,10 +708,25 @@ export class ProfilUserComponent {
     });
   }
 
-  saveUser() 
-  {
-    console.log(this.valuePswd);
-    console.log(this.userCreate_0);
+
+
+  async saveUser() {
+  // Reset erreurs
+  this.errors = {};
+
+  try {
+    // Validation Yup
+    await userSchema.validate({
+      usr_login: this.userCreate_0.usr_login,
+      password: this.valuePswd,
+      usr_firstname: this.userCreate_0.usr_firstname,
+      usr_lastname: this.userCreate_0.usr_lastname,
+      usr_desc: this.userCreate_0.usr_desc,
+      agc_id: this.userCreate_0.agc_id,
+      prfl_id: this.userCreate_0.prfl_id,
+    }, { abortEarly: false });
+
+    // Copier les valeurs
     this.userCreate.usr_login = this.userCreate_0.usr_login;
     this.userCreate.usr_firstname = this.userCreate_0.usr_firstname;
     this.userCreate.usr_lastname = this.userCreate_0.usr_lastname;
@@ -679,38 +735,69 @@ export class ProfilUserComponent {
     this.userCreate.prfl_id = this.userCreate_0.prfl_id;
     this.userCreate.usr_password = this.valuePswd;
 
-    console.log(this.userCreate);
-
     this.submitted = true;
-    this.profilDroitsUser.createUser(this.userCreate).subscribe({
-        next: () => {
-            this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Utilisateur créé avec succés', life: 3000 });
-            this.recipient_.id = 0;
-            this.recipient_.value = this.userCreate.usr_desc;
-            this.recipients.push(this.recipient_);
-            this.sms.signature = "COSAMA";
-            this.sms.subject = `Nouvel Accés`;
-            this.sms.content = `Votre login : ${this.userCreate.usr_login}, Votre mot de passe à changer : ${this.userCreate.usr_password}`;
-            this.sms.recipients = this.recipients;
-            this.parametrageService.sendSMS("808f77dd3df865774d33996cce2f4782", this.sms).subscribe({
-              next : response => {
-                console.info('SMS envoye avec succes', response);
-              },
-              error: (error) => {
-                console.error('Error envoie', error);
-              }
-            })
-        },
-        error: error => {
-            console.error('ERROR', error);
-            this.messageService.add({ severity: 'error', summary: 'SILECS', detail: 'Erreur serveur', life: 3000 });
-        }
-    });
-    this.productDialog0 = false;
-    //this.bateauCreate = {};
-    this.valuePswd = "";
 
+    // 🔥 Création utilisateur
+    this.profilDroitsUser.createUser(this.userCreate).subscribe({
+      next: async () => {
+        this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Utilisateur créé avec succès', life: 3000 });
+
+        // Envoyer SMS
+        this.recipient_.id = 0;
+        this.recipient_.value = this.userCreate.usr_desc;
+        this.recipients.push(this.recipient_);
+
+        this.sms.signature = "COSAMA";
+        this.sms.subject = `Nouvel Accès`;
+        this.sms.content = `Votre login : ${this.userCreate.usr_login}, Votre mot de passe à changer : ${this.userCreate.usr_password}`;
+        this.sms.recipients = this.recipients;
+
+        this.parametrageService.sendSMS("808f77dd3df865774d33996cce2f4782", this.sms).subscribe({
+          next: response => console.info('SMS envoyé avec succès', response),
+          error: error => console.error('Erreur envoi SMS', error)
+        });
+
+        // Actualiser la liste des utilisateurs sans quitter la page
+        await this.getAllUsers(); // méthode que tu dois avoir pour rafraîchir la liste
+
+        
+
+        // Réinitialiser formulaire
+        this.userCreate_0 = {
+          usr_id: 0,
+          usr_login: '',
+          usr_firstname: '',
+          usr_lastname: '',
+          usr_password: '',
+          usr_desc: '',
+          usr_etat: false,
+          agc_id: 0,
+          prfl_id: 0
+        };
+
+        this.valuePswd = '';
+        this.productDialog0 = false;
+
+        this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Utilisateur créé avec succés', life: 4000 });
+      },
+      error: error => {
+        console.error('ERROR', error);
+        this.messageService.add({ severity: 'error', summary: 'SILECS', detail: 'Erreur serveur', life: 3000 });
+      }
+    });
+
+  } catch (err: any) {
+    // Gestion erreurs Yup
+    if (err.inner) {
+      err.inner.forEach((e: any) => {
+        this.errors[e.path] = e.message;
+      });
+    }
+    console.warn("Erreurs de validation:", this.errors);
   }
+}
+
+
 
   updateUser(id:number)
   {
@@ -784,6 +871,14 @@ export class ProfilUserComponent {
     
     this.userEditDialog = false;
   }
+
+
+  onGlobalFilter(table: Table, event: any) {
+    const value = event.target.value;
+    console.log("Recherche :", value);
+    table.filterGlobal(value, 'contains');
+  }
+
 
 
   resetPassword(id:number)
@@ -939,6 +1034,9 @@ export class ProfilUserComponent {
     }
     return null; // Retourner null si aucun bateau n'est trouvé
   }
+
+
+
 
   
 }

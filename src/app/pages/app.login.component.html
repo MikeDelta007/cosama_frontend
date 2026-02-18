@@ -6,12 +6,46 @@
             <a href="http://www.cosama.sn" class="logo">
                 <img src="assets/layout/images/cosama.jpg" alt="poseidon-layout" style="width: 150px; height: auto;" />
             </a>
-            <div class="login-form">
-                <h3>Connectez vous à SILECS</h3>
-                        <input type="text" [(ngModel)]="credentials.login" autocomplete="on" pInputText placeholder="Votre nom d'utilisateur"/>
-                        <input type="password" [(ngModel)]="credentials.password" autocomplete="off" pInputText placeholder="Votre mot de passe"/>
-                        <button pButton pRipple label="Connexion" type="submit"></button>
-                </div>
+            <div class="p-fluid">
+
+            <!-- Login -->
+             <h3>Bienvenue sur SILECS</h3>
+            <div class="field mb-3">
+                <label class="font-semibold mb-2 block">Nom d'utilisateur</label>
+                <input 
+                    type="text"
+                    pInputText
+                    [(ngModel)]="credentials.login"
+                    autocomplete="username"
+                    class="w-full"
+                    placeholder="Votre nom d'utilisateur" />
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="field mb-4">
+                <label class="font-semibold mb-2 block">Mot de passe</label>
+                <p-password
+                    [(ngModel)]="credentials.password"
+                    [toggleMask]="true"
+                    [feedback]="false"
+                    styleClass="w-full"
+                    inputStyleClass="w-full"
+                    autocomplete="current-password"
+                    placeholder="Votre mot de passe">
+                </p-password>
+            </div>
+
+            <!-- Bouton -->
+            <button 
+                pButton 
+                pRipple
+                label="Connexion"
+                icon="pi pi-sign-in"
+                class="w-full p-button-primary"
+                type="submit">
+            </button>
+
+        </div>
         </div>
     </div> 
 </div>

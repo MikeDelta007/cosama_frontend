@@ -62,6 +62,7 @@ import { FacturationComponent } from './components/clients/facturation/facturati
 import { ReglementsComponent } from './components/clients/reglements/reglements.component';
 import { SituComponent } from './components/clients/situ/situ.component';
 import { MagasinageComponent } from './components/fret/magasinage/magasinage.component';
+import { MonProfilComponent } from './components/admin/mon-profil/mon-profil.component';
 
 @NgModule({
     imports: [
@@ -109,7 +110,9 @@ import { MagasinageComponent } from './components/fret/magasinage/magasinage.com
                     {path: 'etats/comptabilite', component: CampagneComponent, canActivate: [RoleGuardGuard], data: { permissions: ['view_etat'] }},
 
                     {path: 'etats-carabane/passagers', component: ManifPassagersComponent, canActivate: [RoleGuardGuard], data: { permissions: ['view_etat'] }},
-                    {path: 'etats-carabane/fret', component: ManifFretComponent, canActivate: [RoleGuardGuard], data: { permissions: ['view_etat'] }}
+                    {path: 'etats-carabane/fret', component: ManifFretComponent, canActivate: [RoleGuardGuard], data: { permissions: ['view_etat'] }},
+
+                    {path: 'editions-systeme/mon-profil', component: MonProfilComponent},
 
                     // {path: 'uikit/formlayout', component: FormLayoutDemoComponent},
                     // {path: 'uikit/floatlabel', component: FloatLabelDemoComponent},

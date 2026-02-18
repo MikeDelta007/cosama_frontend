@@ -62,6 +62,10 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         this.router.navigate(['/se-connecter']); // Redirige vers un chemin protégé
     }
 
+    monProfil() {
+        this.router.navigate(['editions-systeme/mon-profil']); // Redirige vers un chemin protégé
+    }
+
     ngAfterViewInit() {
         // hides the horizontal submenus or top menu if outside is clicked
         this.documentClickListener = this.renderer.listen('body', 'click', (event) => {

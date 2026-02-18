@@ -207,7 +207,7 @@ import { UserService } from './services/user.service';
                                     </div>
                                 </li>
                                 <li role="menuitem">
-                                    <a href="#" (click)="appMain.onTopbarSubItemClick($event)">
+                                    <a routerLink="/editions-systeme/mon-profil">
                                         <i class="pi pi-cog"></i>
                                         <h6>Mon profil</h6>
                                     </a>

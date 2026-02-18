@@ -186,6 +186,7 @@ import { NiveauPipe } from './niveau.pipe';
 import { ReclamationComponent } from './components/dec/reclamation/reclamation.component';
 import { AgencePipe } from './agence.pipe';
 import { ProfilPipe } from './profil.pipe';
+import { MonProfilComponent } from './components/admin/mon-profil/mon-profil.component';
 
 registerLocaleData(localeFr); 
 
@@ -361,7 +362,8 @@ registerLocaleData(localeFr);
         Infovoyage5Pipe,
         NiveauPipe,
         AgencePipe,
-        ProfilPipe
+        ProfilPipe,
+        MonProfilComponent
 
     ],
     providers: [
