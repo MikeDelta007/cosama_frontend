@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ConfirmationService, MessageService, SelectItem } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { AppMainComponent } from 'src/app/app.main.component';
 import { Product } from 'src/app/demo/domain/product';
 import { ProductService } from 'src/app/demo/service/productservice';
@@ -37,6 +38,8 @@ export class CrudFretComponent implements OnInit {
 
   getFretByState : any;
 
+  qrCodeUrl$: Observable<SafeUrl>;
+
   getFretByState_ : any[] = [];
 
   productDialog: boolean = false;
@@ -44,6 +47,8 @@ export class CrudFretComponent implements OnInit {
   public idBillet : number = 0;
 
   productDialog2: boolean = false;
+
+  public outBillet2 : boolean;
 
   productDialog3: boolean = false;
 
@@ -110,7 +115,11 @@ export class CrudFretComponent implements OnInit {
 
   public detail : string;
 
-  public qte_unit_vol : number;
+  public qte : number;
+
+  public unit : number;
+
+  public vol : number;
 
   public ligneFret: LigneFret[] = [];
 
@@ -186,7 +195,8 @@ export class CrudFretComponent implements OnInit {
       billet: '',
       fretClt_id: 0,
       carabane: 0,
-      motif: ''
+      motif: '',
+      paymentMethod : ''
     },
     ligneFretDTOList: LigneFret[0],
     fretId: 0
@@ -238,7 +248,8 @@ export class CrudFretComponent implements OnInit {
       billet: '',
       fretClt_id: 0,
       carabane: 0,
-      motif: ''
+      motif: '',
+      paymentMethod : ''
     },
     ligneFretDTOList: LigneFret[0],
     fretId: 0
@@ -266,6 +277,45 @@ export class CrudFretComponent implements OnInit {
     tPiece: 0
 };
 
+public oneCltFretEdit_ : FretDTO = {
+    fretId: 0,
+    fretCode: '',
+    expEqDest: false,
+    raisonSocialeDest: '',
+    firstnameDest: '',
+    lastnameDest: '',
+    telephoneDest: '',
+    emailDest: '',
+    fretAcompte: 0,
+    fretMontant: 0,
+    fretTva: 0,
+    fretRemiseTaux: 0,
+    fretRemise: 0,
+    fretMontant_ht: 0,
+    applyTVA: false,
+    applyPayment: false,
+    fretDate: '',
+    fretDesc: '',
+    usrLogin: '',
+    fretPayDate: '',
+    fretPayUsr: '',
+    fretEtat: false,
+    billet: '',
+    coutMagasinage: 0,
+    coutMagasinageRemise: 0,
+    usrMagasinage: '',
+    dateMagasinage: '',
+    usrLoginPayable: '',
+    dateEncaissPayable: '',
+    cltcmpt_id: 0,
+    voy_id: 0,
+    fretClt_id: 0,
+    ligneFretDTOList: [],
+    carabane: 0,
+    motif: '',
+    paymentMethod : ''
+  };
+
   public fretClts : FretClt[] = [];
 
   public displayFretOk : LigneFrets[] = [];
@@ -284,7 +334,7 @@ export class CrudFretComponent implements OnInit {
 
   expediteurs$ = new BehaviorSubject<{ [key: number]: string }>({});
 
-  constructor(public voyageService: VoyageService, public appMain: AppMainComponent, private readonly bateauService: BateauService, private fret : FretService, private tarificationService : TarificationService, private billetService : BilletService, private cltEnCompteService : ClientencompteService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
+  constructor(private sanitizer: DomSanitizer, public voyageService: VoyageService, public appMain: AppMainComponent, private readonly bateauService: BateauService, private fret : FretService, private tarificationService : TarificationService, private billetService : BilletService, private cltEnCompteService : ClientencompteService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
 
   ngOnInit() {
       //this.productService.getProducts().then(data => this.products = data);
@@ -359,28 +409,47 @@ export class CrudFretComponent implements OnInit {
       );
   }
 
-  cancelFret() 
-  {
+  cancelFret() {
+    this.submitted = true; // pour afficher le message d'erreur si nécessaire
+
+    // Vérification du motif
+    if (!this.motif || this.motif.trim().length < 5) {
+      // on ne ferme pas le dialogue, on ne fait rien
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'SILECS', 
+        detail: 'Veuillez fournir un motif d\'au moins 5 caractères', 
+        life: 3000 
+      });
+      return;
+    }
+
+    // Si le motif est valide
     this.annulation.fretId = this.oneCltFretEdit.fretId;
     this.annulation.motif = this.motif;
 
-    console.log(this.annulation);
-
-    this.fret.annulerFret(this.annulation).subscribe(
-        {
-        next: response => {
-          this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Frêt annulé avec succés', life: 3000 });
-          console.log('SUCCESSFUL', response)
-          this.motif = "";
-        },
-        error: error => {
-          this.messageService.add({ severity: 'error', summary: 'SILECS', detail: 'Erreur serveur', life: 3000 });
-          console.error('ERROR', error);
-        }
+    this.fret.annulerFret(this.annulation).subscribe({
+      next: response => {
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'SILECS', 
+          detail: 'Frêt annulé avec succès', 
+          life: 3000 
+        });
+        this.motif = "";
+        this.motifDialog = false;
+        this.submitted = false; // réinitialisation
+      },
+      error: error => {
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'SILECS', 
+          detail: 'Erreur serveur', 
+          life: 3000 
+        });
+        console.error('ERROR', error);
       }
-    );
-    //console.log(this.oneCltFretEdit);
-    this.motifDialog = false;
+    });
   }
 
   getVoyageById(voyId: number): VoyageO | null {
@@ -486,7 +555,7 @@ export class CrudFretComponent implements OnInit {
         }
     });
   
-    return total;
+    return Math.round(total);
   }
 
   calculateTotal2(): number {
@@ -516,7 +585,7 @@ export class CrudFretComponent implements OnInit {
           }
       });
 
-    return total;
+    return Math.round(total);
   }
   
   onBagageSelect(event: any) {
@@ -557,9 +626,9 @@ export class CrudFretComponent implements OnInit {
     const newLigneFret = {
         ligneFret_id : 0,
         fret_id : 0,
-        quantity: Number(this.qte_unit_vol),
-        weight: Number(this.qte_unit_vol),
-        volume: Number(this.qte_unit_vol),
+        quantity: Number(this.unit),
+        weight: Number(this.qte),
+        volume: Number(this.vol),
         tbg_id: this.selectedBagage.typeBagage.tbg_id,
         cat_id: this.selectedBagage.cat_id,
         details: this.detail // Inclure le pax_id dans la nouvelle ligne de fret
@@ -573,7 +642,9 @@ export class CrudFretComponent implements OnInit {
     this.oneCltFret.fretDTOS.ligneFretDTOList = this.ligneFret;
     console.log(this.oneCltFret);
     this.detail = "";
-    this.qte_unit_vol = 0;
+    this.qte = 0;
+    this.unit = 0;
+    this.vol = 0;
     this.productDialog2 = false;
 
   }
@@ -586,9 +657,9 @@ export class CrudFretComponent implements OnInit {
     const newLigneFret2 = {
         ligneFret_id : 0,
         fret_id : 0,
-        quantity: Number(this.qte_unit_vol),
-        weight: Number(this.qte_unit_vol),
-        volume: Number(this.qte_unit_vol),
+        quantity: Number(this.unit),
+        weight: Number(this.qte),
+        volume: Number(this.vol),
         tbg_id: this.selectedBagage.typeBagage.tbg_id,
         cat_id: this.selectedBagage.cat_id,
         details: this.detail // Inclure le pax_id dans la nouvelle ligne de fret
@@ -602,13 +673,33 @@ export class CrudFretComponent implements OnInit {
     this.oneCltFretEdit.ligneFretDTOList = this.ligneFret2;
     console.log(this.oneCltFretEdit);
     this.detail = "";
-    this.qte_unit_vol = 0;
+    this.qte = 0;
+    this.unit = 0;
+    this.vol = 0;
     this.productDialog4 = false;
 
   }
 
-  validerOps() 
+  async validerOps() 
   {
+    if (!this.passager.firstName)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le prénom (s) de l\'expéditeur', life: 3000 });
+            return;
+          }
+
+    if (!this.passager.lastName)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le nom de l\'expéditeur', life: 3000 });
+            return;
+          }
+
+    if (!this.passager.phone)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le téléphone de l\'expéditeur', life: 3000 });
+            return;
+          }      
+
     // Autres champs pour cltFret et ligneFret
     if (!this.oneCltFret.fretDTOS) {
                 this.oneCltFret.fretDTOS = {
@@ -646,7 +737,8 @@ export class CrudFretComponent implements OnInit {
                   cltcmpt_id: 0,
                   billet:'',
                   carabane : 0,
-                  motif:''
+                  motif:'',
+                  paymentMethod : ''
                 };  // Initialisation de fretDTOS s'il n'existe pas
     }
     
@@ -654,6 +746,12 @@ export class CrudFretComponent implements OnInit {
     if (!this.oneCltFret.fretDTOS.ligneFretDTOList) 
     {
         this.oneCltFret.fretDTOS.ligneFretDTOList = [];  // Initialiser la liste si elle n'existe pas
+    }
+
+    if (this.oneCltFret.fretDTOS.ligneFretDTOList.length === 0) 
+    {
+        this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Le frêt doit contenir obligatoirement des produits', life: 3000 });
+        return;
     }
     
     // Assigner les détails du passager à oneCltFret
@@ -699,7 +797,23 @@ export class CrudFretComponent implements OnInit {
         console.error('ERROR', error);
       }
     }
+    
   );
+        await this.getAllFret();
+  }
+
+
+  async getAllFret() {
+      this.fret.getFretParEtat().subscribe((response:any) => 
+        {
+          this.getFretByState = response;
+              this.getFretByState_ = Object.entries(this.getFretByState).map(([statut, frets]) => ({
+                  statut,
+                  frets
+              }));
+              console.log(this.getFretByState_);
+        }
+      );
   }
 
   closeSoldeIns()
@@ -764,14 +878,30 @@ export class CrudFretComponent implements OnInit {
 
   printTicketFret(oneCltFret : FretClt) {
     this.oneCltFretEdit = { ...oneCltFret };
+    console.log(oneCltFret as any);
     this.ligneFret3 = this.oneCltFretEdit.ligneFretDTOList;
     console.log(this.ligneFret3);
-    this.outBillet = true; 
+    this.outBillet = true;
     this.getExpediteur(oneCltFret.fretId);
+
+    this.qrCodeUrl$ = this.billetService.generateQRCode(String((oneCltFret as any).fretCode)).pipe(map(data => this.sanitizer.bypassSecurityTrustUrl(data)));
   }
 
-  printTicket() {
-    this.outBillet = true;
+  generateQR(ok: any) {
+    this.billetService.generateQRCode(String(ok)).subscribe({
+      next: (data: string) => {
+        // data contient probablement "data:image/png;base64,...."
+        // this.qrCodeUrl = this.sanitizer.bypassSecurityTrustUrl(data);
+      },
+      error: (error) => {
+        console.error('Error generating QR code', error);
+      }
+    });
+  }
+
+  printTicket() 
+  {
+    
     const printContents = document.getElementById('ticket-container')?.innerHTML;
     if (printContents) {
         //this.saveEtatBillet() 
@@ -930,9 +1060,96 @@ export class CrudFretComponent implements OnInit {
 
             console.log("Final")
         }
+        
     }
-    
+    this.outBillet = false;
   }
+
+
+  printTicket_() 
+  {
+    const printContents = document.getElementById('ticket-content')?.innerHTML;
+    if (printContents) {
+        //this.saveEtatBillet() 
+        const originalContents = document.body.innerHTML;
+
+        // Créer une iframe temporaire
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.top = '-10000px'; // Hors de la vue
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+            iframeDoc.open();
+            iframeDoc.write(`
+                <html>
+                <head>
+                    <title>COSAMA SA</title>
+                    <style>
+                        @media print {
+                          /* Format pour un rouleau de 79,50 mm de largeur */
+                          * {
+                              font-family: 'Consolas', Courrier New !important;
+                          }
+                          body 
+                          {
+                              background: white;
+                          }                   
+                          #ticket-content {
+                              /*width: 79.5mm; /* Largeur pour un rouleau de 79.50 mm */
+                              width: 57.5mm; /*Largeur pour un rouleau de 57.50 mm */
+                              font-size: 10px;
+                              text-align: center;
+                              position: absolute;
+                              left: 0;
+                              margin: 0px;
+                              padding: 5px; /* Réduction du padding pour minimiser l'espace */
+                              color: black; /* Couleur de texte */
+                          }   
+
+                          .titre_1 {
+                              font-family:Verdana, Arial, Helvetica, sans-serif;
+                              font-size:30px;
+                              font-weight:bold;
+                              text-align:left;
+                          }
+
+                            .titre_2 {
+                              font-family:Verdana, Arial, Helvetica, sans-serif;
+                              font-size:10px;
+                              font-weight:bold;
+                            }
+                            
+                            .titre_3 {
+                              font-family:Verdana, Arial, Helvetica, sans-serif;
+                              font-size:11px;
+                              color:#666666;
+                            }
+                      }
+
+
+                    </style>
+                </head>
+                <body>
+                    ${printContents}
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+
+            // Imprimer l'iframe
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+
+            // Nettoyer l'iframe après l'impression
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 1000);
+        }
+    }  
+    this.outBillet2 = false;
+}
 
   searchBillet() { 
     console.log(this.codeBillet);
@@ -1052,6 +1269,45 @@ export class CrudFretComponent implements OnInit {
       this.ligneFret = this.ligneFret.filter(val => val.cat_id === this.ligneFre.cat_id);
       this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Produit frêt supprimé avec succés', life: 3000 });
       this.deleteProductDialog = false;
+  }
+
+
+  printTicketPassager(oneCltFret : FretDTO) 
+  {
+    this.oneCltFretEdit_ = { ...oneCltFret };
+    this.ligneFret3 = this.oneCltFretEdit_.ligneFretDTOList;
+    console.log(this.ligneFret3);
+    this.outBillet2 = true;
+  }
+
+  calculateTotal3(): number {
+    let total2 = 0;
+
+    console.log("outside");
+    console.log(this.oneCltFretEdit_);
+
+      this.ligneFret3.forEach((ligne) => {
+        const prixUnitaire = this.getBagagePU(ligne.cat_id); // Récupère le prix unitaire pour le tbg_id
+        const unite = this.getUniteBagage(ligne.tbg_id);
+        console.log(prixUnitaire);
+        console.log(unite);
+        if (prixUnitaire !== undefined) {
+          if (unite === 1)
+            {
+              total2 += ligne.quantity * prixUnitaire; // Multiplie la quantité par le prix unitaire et ajoute au total
+            }
+            if (unite === 2)
+              {
+                total2 += ligne.weight * prixUnitaire; // Multiplie la quantité par le prix unitaire et ajoute au total
+              }
+              if (unite === 3)
+                {
+                  total2 += ligne.volume * prixUnitaire; // Multiplie la quantité par le prix unitaire et ajoute au total
+                }
+          }
+      });
+
+    return total2;
   }
 
   confirmDelete(lignef2: LigneFret) 

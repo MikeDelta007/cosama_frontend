@@ -112,6 +112,14 @@ export class PaiementComponent implements OnInit {
 
   getFretByState_Bis : any[] = [];
 
+  paymentMethods = [
+    { label: 'WAVE', value: 'WAVE' },
+    { label: 'ORANGE MONEY', value: 'ORANGE MONEY' },
+    { label: 'FREE MONEY', value: 'FREE MONEY' },
+    { label: 'ESPECE', value: 'ESPECE' },
+    { label: 'AUTRES', value: 'AUTRES' }
+  ];
+
   public onePayment : Payment = {
     fretId: 0,
     fretAcompte: 0,
@@ -123,6 +131,7 @@ export class PaiementComponent implements OnInit {
     applyTVA: false,
     applyPayment: false,
     fretPayUsr: '',
+    paymentMethod : '',
     cltcmpt_id: 0
   }
 
@@ -178,7 +187,8 @@ export class PaiementComponent implements OnInit {
     fretClt_id: 0,
     ligneFretDTOList: [],
     carabane: 0,
-    motif: ''
+    motif: '',
+    paymentMethod : ''
   };
 
 
@@ -217,7 +227,8 @@ export class PaiementComponent implements OnInit {
     fretClt_id: 0,
     ligneFretDTOList: [],
     carabane: 0,
-    motif: ''
+    motif: '',
+    paymentMethod : ''
   };
 
   public passager : Passager = {
@@ -416,7 +427,9 @@ export class PaiementComponent implements OnInit {
                 document.body.removeChild(iframe);
             }, 1000);
         }
-    }   
+    }  
+    this.outBillet2 = false; 
+    this.outBillet3 = false; 
 }
 
   getVoyageByBoatId(batId: number): VoyageO | null {
@@ -524,7 +537,7 @@ export class PaiementComponent implements OnInit {
         }
     });
   
-    return total;
+    return Math.round(total);
   }
 
   calculateTotal2(): number {
@@ -554,7 +567,7 @@ export class PaiementComponent implements OnInit {
           }
       });
 
-    return total;
+    return Math.round(total);
   }
 
   calculateTotal3(): number {
@@ -584,7 +597,7 @@ export class PaiementComponent implements OnInit {
           }
       });
 
-    return total2;
+    return Math.round(total2);
   }
   
 
@@ -633,37 +646,55 @@ export class PaiementComponent implements OnInit {
 
 
     
-  validerOps()
+  async validerOps()
   {
+      console.log(this.ligneFret2);
+      console.log(this.oneCltFretEdit.fretClt_id);
+      console.log(this.oneCltFretEdit.fretId);
 
-    console.log(this.ligneFret2);
-    console.log(this.oneCltFretEdit.fretClt_id);
-    console.log(this.oneCltFretEdit.fretId);
+      this.onePayment.fretMontant_ht = this.oneCltFretEdit.fretMontant_ht;
+      this.onePayment.fretMontant = this.oneCltFretEdit.fretMontant;
+      this.onePayment.fretTva = this.oneCltFretEdit.fretTva;
+      this.onePayment.fretRemise = this.oneCltFretEdit.fretRemise;
+      this.onePayment.fretRemiseTaux = this.oneCltFretEdit.fretRemiseTaux;
+      this.onePayment.applyPayment = true;
+      this.onePayment.fretPayUsr = this.user;
+      this.onePayment.applyTVA = this.checked2;
+      this.onePayment.paymentMethod = this.oneCltFretEdit.paymentMethod
 
-    this.onePayment.fretMontant_ht = this.oneCltFretEdit.fretMontant_ht;
-    this.onePayment.fretMontant = this.oneCltFretEdit.fretMontant;
-    this.onePayment.fretTva = this.oneCltFretEdit.fretTva;
-    this.onePayment.fretRemise = this.oneCltFretEdit.fretRemise;
-    this.onePayment.fretRemiseTaux = this.oneCltFretEdit.fretRemiseTaux;
-    this.onePayment.applyPayment = true;
-    this.onePayment.fretPayUsr = this.user;
-    this.onePayment.applyTVA = this.checked2;
+      console.log(this.checked2);
+      //console.log(this.oneCltFretEdit.applyTVA);
 
-    console.log(this.checked2);
-    //console.log(this.oneCltFretEdit.applyTVA);
-
-    this.fret.doPayment(this.oneCltFretEdit.fretId, this.oneCltFretEdit.cltcmpt_id, this.onePayment).subscribe(
-      {
-      next: response => {
-        console.log('SUCCESSFUL', response)
-      },
-      error: error => {
-        console.error('ERROR', error);
+      this.fret.doPayment(this.oneCltFretEdit.fretId, this.oneCltFretEdit.cltcmpt_id, this.onePayment).subscribe(
+        {
+        next: response => {
+          console.log('SUCCESSFUL', response)
+        },
+        error: error => {
+          console.error('ERROR', error);
+        }
       }
-    }
-  );
-  this.productDialog3 = false;
+    );
+    this.productDialog3 = false;
+    await this.getAllFret();
   }
+
+
+  async getAllFret() 
+  {
+    console.log("Ok");
+    this.fret.getFretParEtat_().subscribe((response:any) => 
+        {
+          this.getFretByStateBis = response;
+              this.getFretByState_Bis = Object.entries(this.getFretByStateBis).map(([statut, frets]) => ({
+                  statut,
+                  frets
+              }));
+              console.log(this.getFretByState_Bis);
+        }
+      );
+  }
+  
 
   onCheckChange2(event: any) {
 

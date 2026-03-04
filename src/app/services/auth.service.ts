@@ -68,7 +68,7 @@
 
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError, map } from 'rxjs';
 import { Router } from '@angular/router';
 import {jwtDecode} from 'jwt-decode';
@@ -85,7 +85,7 @@ export class AuthService {
 
   constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
-  private getToken(): string | null 
+  public getToken(): string | null 
   {
     return sessionStorage.getItem('token');
   }
@@ -115,6 +115,7 @@ export class AuthService {
   login(credentials: { login: string; password: string }): Observable<any> {
     return this.http.post<any>(this.apiUrl, credentials).pipe(
       tap((response) => {
+        //console.log('🔐 Login response:', response);
         if (response.token && response.refreshToken && response.user) {
           this.saveTokens(response.token, response.refreshToken, response.user);
         }
@@ -125,22 +126,56 @@ export class AuthService {
 
   refreshToken(): Observable<string> {
     const refreshToken = this.getRefreshToken();
-    if (!refreshToken) {
+
+    //console.log('🔄 Tentative de refresh token...');
+    //console.log('📦 Refresh token stocké:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'null');
+
+    if (!refreshToken || refreshToken.trim() === '') {
+      //console.error('🚫 Aucun refresh token disponible');
       this.logout();
       return throwError(() => new Error('No refresh token available'));
     }
 
-    return this.http.post<{ token: string }>(this.refreshUrl, { refreshToken }).pipe(
-      map((response) => {
-        const newAccessToken = response.token;
+    const body = { token: refreshToken }; // ou refreshToken selon votre DTO
+
+    return this.http.post<any>(this.refreshUrl, body).pipe(
+      tap(response => console.log('✅ Réponse refresh reçue:', response)),
+      map(response => {
+        // Essayer plusieurs formats possibles
+        let newAccessToken = null;
+        if (typeof response === 'string') {
+          newAccessToken = response; // la réponse est directement le token
+        } else if (response?.token) {
+          newAccessToken = response.token;
+        } else if (response?.accessToken) {
+          newAccessToken = response.accessToken;
+        } else {
+          //console.error('❌ Format de réponse inattendu:', response);
+          throw new Error('Nouveau token non reçu');
+        }
+
+        if (!newAccessToken) {
+          throw new Error('Nouveau token non reçu');
+        }
+
         sessionStorage.setItem('token', newAccessToken);
-        console.log(newAccessToken);
+
+        // Si un nouveau refresh token est fourni (rotation)
+        if (response?.refreshToken) {
+          sessionStorage.setItem('refreshToken', response.refreshToken);
+        }
+
         this.tokenSubject.next(newAccessToken);
+        //console.log('✅ Nouveau token sauvegardé:', newAccessToken.substring(0, 20) + '...');
         return newAccessToken;
       }),
-      catchError((error) => {
-        this.logout();
-        return throwError(() => error);
+      catchError(err => {
+        console.error('❌ Erreur refresh token:', err);
+        if (err.status === 401 || err.status === 403) {
+          console.log('🔐 Refresh token invalide, déconnexion...');
+          this.logout();
+        }
+        return throwError(() => err);
       })
     );
   }

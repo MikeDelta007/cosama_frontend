@@ -1283,6 +1283,91 @@ export class EditBilletComponent implements OnInit {
 
       savePassager() 
       {
+        console.log(this.passager.billetsDTOS.criteres.filter(critere => critere !== null && critere !== undefined).length);
+
+
+        if (!this.passager.natId)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir la nationnalité', life: 3000 });
+            return;
+          }
+
+        if (!this.passager.typePiece)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le type de pièce', life: 3000 });
+            return;
+          }
+
+        if (!this.numPiecePassager)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le numéro de pièce', life: 3000 });
+            return;
+          }  
+
+        if (!this.passager.civilite)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir la civilité', life: 3000 });
+            return;
+          }
+
+        if (!this.passager.firstName)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le prénom (s)', life: 3000 });
+            return;
+          }
+
+        if (!this.passager.lastName)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le nom', life: 3000 });
+            return;
+          } 
+
+        if (!this.selectedDate3)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir la date de naissance', life: 3000 });
+            return;
+          }
+
+        if (!this.passager.phone)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le téléphone', life: 3000 });
+            return;
+          }  
+
+        
+
+        if (!this.passager.billetsDTOS.criteres || (this.passager.billetsDTOS.criteres.filter(critere => critere !== null && critere !== undefined).length) < 2)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez bien remplir les critères', life: 3000 });
+            return;
+          } 
+
+
+        if (!this.passager.typePlace)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le type de place', life: 3000 });
+            return;
+          }  
+
+        if (!this.passager.nomPlace)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez choisir la place', life: 3000 });
+            return;
+          }  
+
+        if (this.passager.valCheck === 1 && !this.selectedDate4)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir la date de naissance du bébé', life: 3000 });
+            return;
+          } 
+          
+        if (this.passager.valCheck === 1 && !this.nomCompletEnfant)
+          {
+            this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez remplir le nom complet du bébé', life: 3000 });
+            return;
+          }
+          
+
         console.log(this.passager);
         this.passagerBillet.natId = this.passager.natId;
         this.passagerBillet.civilite = this.passager.civilite;

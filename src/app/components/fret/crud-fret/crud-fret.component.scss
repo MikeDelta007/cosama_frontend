@@ -1,0 +1,13 @@
+.price-container {
+  display: flex;
+  gap: 25px;            /* espace entre les deux */
+  align-items: center;
+}
+
+.price-box {
+  padding: 6px 12px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}

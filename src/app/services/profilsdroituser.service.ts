@@ -128,6 +128,22 @@ export class ProfilsdroituserService {
       );
     }
 
+
+    public updateEtatUser_(idUsr: number, userDTO : Utilisateur)
+    {
+      const url = `${config.apiBaseUrl}/parametrage/updateEtat-user`;
+      const params = new HttpParams()
+        .set('usrId', idUsr);
+  
+      return this.http.put<Utilisateur>(url, userDTO, { headers : this.headers, params }).pipe(
+        tap(response => console.log('Etat user updated successfully', response)),
+        catchError(error => {
+          console.error('Error updating user', error);
+          return throwError(error);
+        })
+      );
+    }
+
     public updateEtatProfil(idUsr: number, profilDTO : Profil)
     {
       const url = `${config.apiBaseUrl}/parametrage/updateEtat-profil`;
@@ -142,5 +158,30 @@ export class ProfilsdroituserService {
         })
       );
     }
-  
+
+    getMyProfile(id: number): Observable<Utilisateur> {
+      return this.http.get<Utilisateur>(
+        `${config.apiBaseUrl}/parametrage/me`,
+        { params: { id } }
+      );
+    }
+
+    updateMyProfile(id: number, user: Utilisateur): Observable<Utilisateur> {
+      return this.http.put<Utilisateur>(
+        `${config.apiBaseUrl}/parametrage/me`,
+        user,
+        { params: { id } }
+      );
+    }
+
+    changePassword(id: number, dto: { oldPassword: string, newPassword: string }): Observable<any> {
+      // On utilise HttpParams pour passer l'id correctement en query string
+      const params = new HttpParams().set('id', id.toString());
+
+      return this.http.put<any>(
+        `${config.apiBaseUrl}/parametrage/me/change-password`,
+        dto,
+        { params } // ici id sera passé comme ?id=xxx
+      );
+    }
 }

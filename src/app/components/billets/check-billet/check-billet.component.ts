@@ -70,7 +70,8 @@ export class CheckBilletComponent implements OnInit {
     fretClt_id: 0,
     carabane: 0,
     ligneFretDTOList: [],
-    motif: ''
+    motif: '',
+    paymentMethod : ''
   };
 
   public etatBillet : EtatBillet = {

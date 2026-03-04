@@ -193,8 +193,8 @@ import { UserService } from './services/user.service';
                             <a href="#" (click)="appMain.onTopbarItemClick($event,profile)">
                             <img class="profile-image" src="assets/layout/images/sn.png" height="32" weight="32"/>
                             <div class="profile-info">
-                                    <h6>{{appMain.user.login}}</h6>
-                                    <span>{{appMain.user.profil.prfl_libelle}}</span>
+                                    <h6>{{appMain.user?.login}}</h6>
+                                    <span>{{appMain.user?.profil?.prfl_libelle}}</span>
                                 </div>
                             </a>
 
@@ -202,8 +202,8 @@ import { UserService } from './services/user.service';
                                 <li class="layout-submenu-header">
                                     <img class="profile-image" src="assets/layout/images/sn.png" height="32" weight="32"/>
                                     <div class="profile-info">
-                                        <h6>{{appMain.user.firstname}} {{appMain.user.lastname}}</h6>
-                                        <span>{{appMain.user.profil.prfl_libelle}}</span>
+                                        <h6>{{appMain.user?.firstname}} {{appMain.user?.lastname}}</h6>
+                                        <span>{{appMain.user?.profil?.prfl_libelle}}</span>
                                     </div>
                                 </li>
                                 <li role="menuitem">

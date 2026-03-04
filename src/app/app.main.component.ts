@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import { AuthService } from './services/auth.service';
 import { Router } from '@angular/router';
 import { UserService } from './services/user.service';
+import { IdleService } from './services/idle-service.service';
 
 @Component({
     selector: 'app-main',
@@ -48,13 +49,23 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
 
     user: any;  // Stocke les informations de l'utilisateur
 
-    constructor(private userService: UserService, public authS : AuthService, private router: Router, public renderer: Renderer2, private menuService: MenuService, private primengConfig: PrimeNGConfig,
+    constructor(private userService: UserService, public idleService : IdleService, public authS : AuthService, private router: Router, public renderer: Renderer2, private menuService: MenuService, private primengConfig: PrimeNGConfig,
                 public app: AppComponent) { }
                 
     ngOnInit(): void 
     {
         this.user = this.userService.getUser(); // Récupérer l'utilisateur à partir du service
+
+        // Surveiller les changements d'authentification
+        this.authS.token$.subscribe(token => {
+        if (token) {
+            this.idleService.startWatching();
+        } else {
+            this.idleService.stopWatching();
+        }
+        });
     }
+
 
     logout() {
         this.authS.logout();
@@ -226,6 +237,7 @@ export class AppMainComponent implements AfterViewInit, OnDestroy, OnInit {
         if (this.documentClickListener) {
             this.documentClickListener();
         }
+        this.idleService.stopWatching();
     }
 
 }

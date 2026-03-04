@@ -53,6 +53,7 @@ export class FretDTO {
     fretClt_id: number;
     carabane : number;
     motif : string;
+    paymentMethod : string;
     ligneFretDTOList: LigneFret[];
 
     constructor(init?: Partial<FretDTO>) {

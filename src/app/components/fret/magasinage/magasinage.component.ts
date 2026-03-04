@@ -61,7 +61,8 @@ export class MagasinageComponent implements OnInit {
       fretClt_id: 0,
       ligneFretDTOList: [],
       carabane: 0,
-      motif: ''
+      motif: '',
+      paymentMethod : ''
     };
 
     public cltEnComptes : ClientEnCompte[] = [];
@@ -153,7 +154,8 @@ export class MagasinageComponent implements OnInit {
         fretClt_id: 0,
         carabane: 0,
         ligneFretDTOList: [],
-        motif: ''
+        motif: '',
+        paymentMethod : ''
       };
 
       public remisePourcentage: number = 0;

@@ -86,7 +86,6 @@
                                     </p-inputNumber>
                                                                      
                                 </td>
-                                
                             </tr>
                             <tr>
                                 <td>Montant HT </td>
@@ -118,6 +117,20 @@
                                 <td style="padding-left: 5px;">
                                     <input pInputText [(ngModel)]="oneCltFretEdit.fretAcompte" type="text" placeholder="Montant TTC" class="w-24 sm:w-32" style="height: 30px;"/>   
                                 </td>
+                            </tr>
+                            <tr>
+                                <td>Mode paiement </td>
+                                <td style="padding-left: 5px;">
+                                    <p-dropdown 
+                                        [options]="paymentMethods" 
+                                        [(ngModel)]="oneCltFretEdit.paymentMethod" 
+                                        placeholder="Sélectionnez"
+                                        [showClear]="true"
+                                        optionLabel="label" 
+                                        optionValue="value">
+                                    </p-dropdown>
+                                </td>
+                               
                             </tr>
 
                             <tr>
@@ -163,12 +176,7 @@
                     </div>
                     <div class="col-12 md:col-12">
                         <div class="card p-fluid">
-                            <tr>
-                                <td style="padding-left: 10px;">
-                                    <h4>Prix Total HT actuel : {{this.calculateTotal2() || 0}} FCFA</h4>
-                                </td>
-                            </tr>
-                            <br/>
+                            
                             <p-table #dt [value]="ligneFret2" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
                                
                                 <ng-template pTemplate="header">
@@ -251,6 +259,13 @@
                                 <td style="padding-left: 5px;">
                                     <input readonly pInputText [(ngModel)]="oneCltFretEdit.fretAcompte" type="text" placeholder="Montant TTC" class="w-24 sm:w-32" style="height: 30px;"/>   
                                 </td>
+                                 
+                            </tr>
+                             <tr>
+                                <td>Mode Paiement</td>
+                                <td style="padding-left: 5px; padding-right: 10px;">
+                                    <input readonly pInputText [(ngModel)]="oneCltFretEdit.paymentMethod" type="text" placeholder="Mode Paiement" class="w-24 sm:w-32" style="height: 30px;"/>   
+                                </td>
                             </tr>
                         </div>
                     </div>         
@@ -291,11 +306,6 @@
                     </div>
                     <div class="col-12 md:col-12">
                         <div class="card p-fluid">
-                            <tr>
-                                <td style="padding-left: 10px;" [ngStyle]="{'background-color': oneCltFretEdit.applyPayment ? 'lightgreen' : 'yellow'}">
-                                    <h4>Prix Total HT actuel : {{this.calculateTotal2() || 0}} FCFA</h4>
-                                </td>
-                            </tr>
                             <br/>
                             <p-table #dt [value]="ligneFret2" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
                                
@@ -427,7 +437,7 @@
         <p-dialog
     [(visible)]="outBillet3"
     [modal]="true"
-    header="Pré - print du ticket"
+    header="Pré - print de la facture"
     class="p-fluid"
     [style]="{ width: '750px' }"
 >

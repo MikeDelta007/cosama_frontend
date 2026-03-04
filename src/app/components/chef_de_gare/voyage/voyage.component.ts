@@ -40,6 +40,10 @@ export class VoyageComponent implements OnInit {
 
   submitted: boolean = false;
 
+  sameDates = false;
+
+  sameCities = false;
+
   cols: any[] = [];
 
   statuses: any[] = [];
@@ -188,37 +192,114 @@ export class VoyageComponent implements OnInit {
   }
   
 
-  saveVoyage() 
-  {
-    const formattedDate1 = this.datePipe.transform(this.voyageCreate.voy_datedpt, 'yyyy-MM-dd');
-    const formattedDate2 = this.datePipe.transform(this.voyageCreate.voy_datearriv, 'yyyy-MM-dd');
-    console.log(this.voyageCreate.voy_datedpt);
-    this.voyage.voy_depart = this.voyageCreate.voy_depart;
-    this.voyage.voy_destination = this.voyageCreate.voy_destination;
-    this.voyage.voy_datedpt = formattedDate1;
-    this.voyage.voy_datearriv = formattedDate2;
-    this.voyage.bat_id = this.voyageCreate.bat_id;
-    this.voyage.voy_etat = 1; 
-
-    console.log(this.voyage);
+  saveVoyage() {
     this.submitted = true;
-    this.voyageService.createVoyage(this.voyage).subscribe({
-        next: () => {
-            window.location.reload();
-            this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Voyage créé avec succés', life: 3000 });
-        },
-        error: error => {
-            console.error('ERROR', error);
-            this.messageService.add({ severity: 'error', summary: 'SILECS', detail: 'Erreur serveur', life: 3000 });
-        }
-    });
-    this.productDialog = false;
-    //this.bateauCreate = {};
 
-  }
-    selectedDate1(selectedDate1: any, arg1: string) {
-        throw new Error('Method not implemented.');
+    const v = this.voyageCreate;
+
+    // ✅ 1. Vérifier que tous les champs sont remplis
+    if (!v?.bat_id || !v?.voy_depart || !v?.voy_destination || !v?.voy_datedpt || !v?.voy_datearriv) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Tous les champs sont obligatoires.'
+      });
+      return;
     }
+
+    // ✅ 2. Vérifier égalité des dates
+    const dateDepart = new Date(v.voy_datedpt).getTime();
+    const dateArrivee = new Date(v.voy_datearriv).getTime();
+
+    this.sameDates = dateDepart === dateArrivee;
+
+    // ✅ 3. Vérifier villes identiques
+    this.sameCities = v.voy_depart === v.voy_destination;
+
+    if (this.sameDates) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: "La date de départ doit être différente de la date d'arrivée."
+      });
+      return;
+    }
+
+    if (this.sameCities) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'La ville de départ doit être différente de la destination.'
+      });
+      return;
+    }
+
+    // ✅ 4. Formatter les dates
+    const formattedDate1 = this.datePipe.transform(v.voy_datedpt, 'yyyy-MM-dd');
+    const formattedDate2 = this.datePipe.transform(v.voy_datearriv, 'yyyy-MM-dd');
+
+    if (!formattedDate1 || !formattedDate2) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Format de date invalide.'
+      });
+      return;
+    }
+
+    // ✅ 5. Construire l'objet backend
+    const payload = {
+      voy_id: null,
+      voy_depart: v.voy_depart,
+      voy_destination: v.voy_destination,
+      voy_datedpt: formattedDate1,
+      voy_datearriv: formattedDate2,
+      bat_id: v.bat_id,
+      voy_etat: 1,
+      motif: ''
+    };
+
+    // console.log('Voyage prêt à être envoyé', payload);
+
+    // ✅ 6. Appel API
+    this.voyageService.createVoyage(payload).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'SILECS',
+          detail: 'Voyage créé avec succès',
+          life: 3000
+        });
+
+        // fermer popup
+        this.productDialog = false;
+        this.submitted = false;
+
+        // ✅ reset propre
+        this.voyageCreate = {
+          voy_id: null,
+          bat_id: null,
+          voy_depart: null,
+          voy_destination: null,
+          voy_datedpt: null,
+          voy_datearriv: null,
+          motif: null,
+          voy_etat: 1
+        };
+      },
+
+      error: (error) => {
+        console.error('ERROR', error);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'SILECS',
+          detail: error?.error?.message || 'Erreur serveur',
+          life: 3000
+        });
+      }
+    });
+  }
 
   openNew() {
       this.product = {};
@@ -264,25 +345,82 @@ export class VoyageComponent implements OnInit {
   this.editVoyageDialog = true;
   }
 
-  saveVoyage2() 
-  {
-    console.log(this.voyageEdit);
+  saveVoyage2() {
     this.submitted = true;
-    const formattedDate1 = this.datePipe.transform(this.voyageEdit.voy_datedpt, 'yyyy-MM-dd');
-    const formattedDate2 = this.datePipe.transform(this.voyageEdit.voy_datearriv, 'yyyy-MM-dd');
-    this.voyageEdit.voy_datedpt = formattedDate1;
-    this.voyageEdit.voy_datearriv = formattedDate2;
-    this.voyageService.updateVoyage(this.voyageEdit).subscribe({
+
+    // ✅ 1. Vérifier champs obligatoires
+    if (
+      !this.voyageEdit?.bat_id ||
+      !this.voyageEdit?.voy_depart ||
+      !this.voyageEdit?.voy_destination ||
+      !this.voyageEdit?.voy_datedpt ||
+      !this.voyageEdit?.voy_datearriv
+    ) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Tous les champs sont obligatoires'
+      });
+      return;
+    }
+
+    // ✅ 2. Vérifier villes différentes
+    if (this.voyageEdit.voy_depart === this.voyageEdit.voy_destination) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Le départ doit être différent de la destination'
+      });
+      return;
+    }
+
+    // ✅ 3. Vérifier dates différentes
+    const sameDates =
+      new Date(this.voyageEdit.voy_datedpt).getTime() ===
+      new Date(this.voyageEdit.voy_datearriv).getTime();
+
+    if (sameDates) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: "La date de départ doit être différente de la date d'arrivée"
+      });
+      return;
+    }
+
+    // ✅ 4. Formatter SANS muter l'objet original
+    const payload = {
+      ...this.voyageEdit,
+      voy_datedpt: this.datePipe.transform(this.voyageEdit.voy_datedpt, 'yyyy-MM-dd'),
+      voy_datearriv: this.datePipe.transform(this.voyageEdit.voy_datearriv, 'yyyy-MM-dd')
+    };
+
+    console.log('Payload update', payload);
+
+    // ✅ 5. Appel backend
+    this.voyageService.updateVoyage(payload).subscribe({
       next: () => {
-          this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Voyage mis à jour avec succés', life: 3000 });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'SILECS',
+          detail: 'Voyage mis à jour avec succès',
+          life: 3000
+        });
+
+        this.editVoyageDialog = false;
+        this.submitted = false;
       },
-      error: error => {
-          console.error('ERROR', error);
-          this.messageService.add({ severity: 'error', summary: 'SILECS', detail: 'Erreur serveur', life: 3000 });
+      error: (error) => {
+        console.error('ERROR', error);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'SILECS',
+          detail: error?.error?.message || 'Erreur serveur',
+          life: 3000
+        });
       }
     });
-    this.editVoyageDialog = false;
-
   }
 
   openMotifVoyage(voyage : Voyage) 
@@ -310,7 +448,6 @@ export class VoyageComponent implements OnInit {
 
   cancelVoyage(id : number)
   {
-
     // Utilisation de la fonction
     let v = this.voyageEdit;
     v = this.findVoyById(id);
@@ -333,7 +470,13 @@ export class VoyageComponent implements OnInit {
     console.log(`Voy à poster :`, v);
     console.log(`Id à poster :`, id);
     
-    this.voyageService.cancelVoyage(v, this.mt.motif).subscribe({
+    if (this.mt.motif.length < 5)
+    {
+      this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Motif obligatoire et doit faire plus de 5 caractères', life: 3000 });
+    }
+    else
+    {
+      this.voyageService.cancelVoyage(v, this.mt.motif).subscribe({
       next: () => {
           this.messageService.add({ severity: 'success', summary: 'SILECS', detail: 'Voyage annulé succés', life: 3000 });
           this.motifVoyDialog = false;
@@ -344,6 +487,7 @@ export class VoyageComponent implements OnInit {
           this.messageService.add({ severity: 'error', summary: 'SILECS', detail: 'Erreur serveur', life: 3000 });
       }
     });
+    }
 
   }
 

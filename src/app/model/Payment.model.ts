@@ -10,6 +10,7 @@ export class Payment {
     applyPayment: boolean;
     fretPayUsr: string;
     cltcmpt_id: number;
+    paymentMethod: string;
 
     constructor(init?: Partial<Payment>) {
         Object.assign(this, init);

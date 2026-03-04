@@ -41,13 +41,77 @@
                                 {{billet.numeropiece}}
                             </td>
                             <td>
-                                <div class="flex">
-                                    <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-success mr-2 mb-2" (click)="editBillet(billet)"></button>
-                                    <button *ngIf="billet.bilEtat" pButton pRipple icon="pi pi-print" class="p-button-rounded p-button-warning mr-2 mb-2" (click)="printBillet(billet)">&nbsp;Imprimer</button>
-                                    <button *ngIf="billet.edit && billet.bilEtat" pButton pRipple icon="pi pi-user-edit" class="p-button-rounded p-button-primary mr-2 mb-2">&nbsp;Editer</button>
-                                    <button *ngIf="billet.remb && billet.bilEtat"  pButton pRipple icon="pi pi-wallet" class="p-button-rounded p-button-warning mr-2 mb-2" (click)="openNew2(billet)">&nbsp;Rembourser</button>
-                                    <button *ngIf="billet.bilEtat" pButton pRipple icon="pi pi-tags" class="p-button-rounded p-button-help mr-2 mb-2" (click)="openNew3(billet)">&nbsp;Reporter / Surclasser</button>
-                                </div>
+                                <div class="flex flex-wrap gap-2">
+
+                                    <!-- Consulter -->
+                                    <button
+                                        pButton
+                                        pRipple
+                                        type="button"
+                                        icon="pi pi-eye"
+                                        label="Consulter"
+                                        class="p-button-rounded p-button-success"
+                                        pTooltip="Voir le billet"
+                                        tooltipPosition="top"
+                                        (click)="editBillet(billet)">
+                                    </button>
+
+                                    <!-- Imprimer -->
+                                    <button
+                                        *ngIf="billet?.bilEtat"
+                                        pButton
+                                        pRipple
+                                        type="button"
+                                        icon="pi pi-print"
+                                        label="Imprimer"
+                                        class="p-button-rounded p-button-warning"
+                                        pTooltip="Imprimer le billet"
+                                        tooltipPosition="top"
+                                        (click)="printBillet(billet)">
+                                    </button>
+
+                                    <!-- Editer -->
+                                    <button
+                                        *ngIf="billet?.edit && billet?.bilEtat"
+                                        pButton
+                                        pRipple
+                                        type="button"
+                                        icon="pi pi-user-edit"
+                                        label="Éditer"
+                                        class="p-button-rounded p-button-primary"
+                                        pTooltip="Modifier le billet"
+                                        tooltipPosition="top">
+                                    </button>
+
+                                    <!-- Rembourser -->
+                                    <button
+                                        *ngIf="billet?.remb && billet?.bilEtat"
+                                        pButton
+                                        pRipple
+                                        type="button"
+                                        icon="pi pi-wallet"
+                                        label="Rembourser"
+                                        class="p-button-rounded p-button-warning"
+                                        pTooltip="Rembourser le billet"
+                                        tooltipPosition="top"
+                                        (click)="openNew2(billet)">
+                                    </button>
+
+                                    <!-- Reporter / Surclasser -->
+                                    <button
+                                        *ngIf="billet?.bilEtat"
+                                        pButton
+                                        pRipple
+                                        type="button"
+                                        icon="pi pi-tags"
+                                        label="Reporter / Surclasser"
+                                        class="p-button-rounded p-button-help"
+                                        pTooltip="Reporter ou surclasser le billet"
+                                        tooltipPosition="top"
+                                        (click)="openNew3(billet)">
+                                    </button>
+
+                                    </div>
                             </td>
                             <td style="width:14%; min-width:8rem;">
                                 
@@ -306,7 +370,9 @@
                         <tr>
                             <td style="padding-top: 0px;">
                                 <div style="text-align: center;">
-                                    <strong>Prix TTC : {{billet.bilPtt}} FCFA</strong>
+                                    <strong>Prix HT : {{billet.bilPht}} FCFA</strong><br/>
+                                    <strong>Taxe : {{billet.bilTaxe}} FCFA</strong><br/>
+                                    <strong>Prix TTC : {{billet.bilPtt + billet.bilTaxe}} FCFA</strong>
                                 </div>
                                 
                             </td>
@@ -983,7 +1049,7 @@
               </div>
 
               <label for="name" style="color: red;">
-                Afin de prévenir toute erreur susceptible d’entraîner une perte financière, veuillez saisir la suite dans l’ordre indiqué.
+                Afin de prévenir toute erreur susceptible d'entraîner une perte financière, veuillez saisir la suite dans l'ordre indiqué.
               </label>
               <div *ngFor="let groupe of groupesCriteres; let i = index" class="field">
                 <label [for]="'groupe' + i"><b>{{ groupe.grpcrt_nom }}</b></label>

@@ -154,7 +154,6 @@ import { EditBilletComponent } from './components/billets/edit-billet/edit-bille
 import { PrintBilletComponent } from './components/billets/edit-billet/print-billet/print-billet.component';
 import { CheckBilletComponent } from './components/billets/check-billet/check-billet.component';
 import { CrudFretComponent } from './components/fret/crud-fret/crud-fret.component';
-import { TokenInterceptor } from './services/auth/token-interceptor.service';
 import { CrudComponent } from './components/clients/crud/crud.component';
 import { FacturationComponent } from './components/clients/facturation/facturation.component';
 import { ReglementsComponent } from './components/clients/reglements/reglements.component';
@@ -187,6 +186,8 @@ import { ReclamationComponent } from './components/dec/reclamation/reclamation.c
 import { AgencePipe } from './agence.pipe';
 import { ProfilPipe } from './profil.pipe';
 import { MonProfilComponent } from './components/admin/mon-profil/mon-profil.component';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthInterceptor } from './services/auth/token-interceptor.service';
 
 registerLocaleData(localeFr); 
 
@@ -368,8 +369,9 @@ registerLocaleData(localeFr);
     ],
     providers: [
         {provide: LocationStrategy, useClass: HashLocationStrategy},
-        {provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true},
-        CountryService, CustomerService, EventService, IconService, NodeService,
+        
+        {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
+        CountryService, CustomerService, EventService, IconService, NodeService, MessageService, ConfirmationService,
         PhotoService, ProductService, MenuService, AppBreadcrumbService, ConfigService, DatePipe, VoyagePipe, Infovoyage2Pipe, InfobateauPipe, 
         { provide: LOCALE_ID, useValue: 'fr' }
     ],

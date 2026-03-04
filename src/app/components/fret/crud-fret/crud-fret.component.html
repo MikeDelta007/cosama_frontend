@@ -46,35 +46,39 @@
                                 {{fret.fretCltDTO.firstname + " " + fret.fretCltDTO.lastname}}
                             </td>
                             <td>
-                                <div class="flex">
-                                    <button *ngIf="fret.applyPayment || !fret.fretEtat" pButton pRipple iconPos="left" class="p-button-rounded p-button-warning p-button-sm mr-2" (click)="openNew4(fret)">
+                                <div class="flex align-items-center flex-wrap gap-2">
+                                    <button *ngIf="fret.applyPayment || !fret.fretEtat" pButton pRipple iconPos="left" class="p-button-rounded p-button-warning p-button-sm action-btn" (click)="openNew4(fret)">
                                         <i class="pi pi-eye" style="margin-right: 8px;"></i>Voir
                                     </button> 
                                     
-                                    <button *ngIf="!fret.applyPayment && fret.fretEtat" pButton pRipple iconPos="left" class="p-button-rounded p-button-primary p-button-sm mr-2" (click)="editFret(fret)">
+                                    <button *ngIf="!fret.applyPayment && fret.fretEtat" pButton pRipple iconPos="left" class="p-button-rounded p-button-primary p-button-sm action-btn" (click)="editFret(fret)">
                                         <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer<template></template>
                                     </button> 
     
-                                    <button *ngIf="fret.applyPayment" pButton pRipple iconPos="left" class="p-button-rounded p-button-help p-button-sm mr-2" (click)="printTicketFret(fret)">
+                                    <button *ngIf="fret.applyPayment" pButton pRipple iconPos="left" class="p-button-rounded p-button-help p-button-sm action-btn" (click)="printTicketFret(fret)">
                                         <i class="pi pi-print" style="margin-right: 8px;"></i>Ticket frêt
                                     </button> 
+
+                                    <button *ngIf="fret.applyPayment" pButton pRipple iconPos="left" class="p-button-rounded p-button-help p-button-sm action-btn" (click)="printTicketPassager(fret)">
+                                        <i class="pi pi-print" style="margin-right: 8px;"></i>Ticket Passager
+                                    </button> 
     
-                                    <button *ngIf="fret.fretEtat && profil.cancel_fret" pButton pRipple iconPos="left" class="p-button-rounded p-button-danger p-button-sm mr-2" (click)="motifNew(fret)">
+                                    <button *ngIf="fret.fretEtat && profil.cancel_fret" pButton pRipple iconPos="left" class="p-button-rounded p-button-danger p-button-sm action-btn" (click)="motifNew(fret)">
                                         <i class="pi pi-times" style="margin-right: 8px;"></i>Annuler
                                     </button> 
                                    <td [ngStyle]="{
                                         'background-color': fret.fretEtat ? 'lightgreen' : 'orangered',
-                                        'padding': '12px 16px',
+                                        'padding': '10px 12px',
                                         'border-radius': '8px'
                                         }">
-                                    <h4 style="margin: 0; font-size: 15px; line-height: 1.2; color: black;">
+                                    <h5 style="margin: 0; font-size: 12px; line-height: 1.2; color: black;">
                                         <ng-container *ngIf="fret.fretEtat; else elseBlock">
                                         Frêt actif
                                         </ng-container>
                                         <ng-template #elseBlock>
                                         Frêt annulé
                                         </ng-template>
-                                    </h4>
+                                    </h5>
                                     </td>
 
                                 </div>
@@ -245,7 +249,7 @@
         </ng-template>
 
         <ng-template pTemplate="footer">
-            <button *ngIf="this.v !== null" pButton pRipple label="Valider l'opération" icon="pi pi-check" class="p-button-text" (click)="validerOps()"></button>
+            <button *ngIf="this.v !== null" pButton pRipple label="Valider l'opération" icon="pi pi-check" class="p-button-primary mr-2" (click)="validerOps()"></button>
         </ng-template>
         </p-dialog>
 
@@ -254,7 +258,8 @@
               <div class="formgrid grid">
                 <div class="field col">
                   <label for="status">Type de produit</label>
-                  <p-dropdown [options]="bagages" optionLabel="cat_nom" placeholder="Choisir..." appendTo="body" [showClear]="true" (onChange)="onBagageSelect($event)">
+                  <p-dropdown [options]="bagages" filter="true"
+                        filterBy="cat_nom" optionLabel="cat_nom" placeholder="Choisir..." appendTo="body" [showClear]="true" (onChange)="onBagageSelect($event)">
                     <ng-template let-option pTemplate="item">
                       <span>{{option.cat_nom}}</span>
                   </ng-template>
@@ -268,12 +273,43 @@
                     <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.firstName">Name is required.</small>
                 </div>
                 <div class="field">
-                    <label *ngIf="selectedBagage2.vol_id === 1" for="name">Quantité</label>
-                    <label *ngIf="selectedBagage2.vol_id === 2" for="name">Poids</label>
-                    <label *ngIf="selectedBagage2.vol_id === 3" for="name">Volume</label>
-                    <input type="text" pInputText [(ngModel)]="qte_unit_vol" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.lastname}"/>
-                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.lastName">Name is required.</small>
-                </div>   
+                    <!-- Quantité -->
+                    <div class="field" *ngIf="selectedBagage2?.vol_id === 1">
+                        <label for="quantite">Quantité</label>
+                        <input
+                        id="quantite"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="unit"
+                        required
+                        />
+                    </div>
+
+                    <!-- Poids -->
+                    <div class="field" *ngIf="[1,2,3].includes(selectedBagage2?.vol_id)">
+                        <label for="poids">Poids</label>
+                        <input
+                        id="poids"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="qte"
+                        required
+                        />
+                    </div>
+
+                    <!-- Volume -->
+                    <div class="field" *ngIf="selectedBagage2?.vol_id === 3">
+                        <label for="volume">Volume</label>
+                        <input
+                        id="volume"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="vol"
+                        required
+                        />
+                    </div>
+
+                    </div> 
             </ng-template>
 
             <ng-template pTemplate="footer">
@@ -386,9 +422,18 @@
                                     <button pButton pRipple label="Ajouter une nouvelle ligne frêt" icon="pi pi-download" class="p-button-success mr-2" (click)="openNew3()"></button>
                                 </td>
 
-                                <td style="padding-left: 10px;">
-                                    <h4>Prix Total HT actuel : {{this.calculateTotal2() || 0}} FCFA</h4>
-                                </td>
+                               
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                        <div class="price-container">
+                                            <label class="price-box">
+                                                Prix Total HT : {{ calculateTotal2() || 0 }} FCFA
+                                            </label>
+
+                                            <label class="price-box">
+                                                Prix TTC : {{ (1.18 * calculateTotal2()) || 0 }} FCFA
+                                            </label>
+                                            </div>
+                                    </div>
                             </tr>
                             <br/>
                             <p-table #dt [value]="ligneFret2" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
@@ -507,9 +552,22 @@
                     <div class="col-12 md:col-12">
                         <div class="card p-fluid">
                             <tr>
-                                <td style="padding-left: 10px;" [ngStyle]="{'background-color': oneCltFretEdit.applyPayment ? 'lightgreen' : 'yellow'}">
-                                    <h4>Prix Total HT : {{this.calculateTotal2() || 0}} FCFA</h4>
-                                </td> 
+                                <td
+                                    style="padding-left: 10px;"
+                                    [ngStyle]="{'background-color': oneCltFretEdit.applyPayment ? 'lightgreen' : 'yellow'}"
+                                    >
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <div class="price-container">
+                                            <label class="price-box">
+                                                Prix Total HT : {{ calculateTotal2()|| 0 }} FCFA
+                                            </label>
+
+                                            <label class="price-box">
+                                                Prix TTC : {{ (1.18 * calculateTotal2()) || 0 }} FCFA
+                                            </label>
+                                            </div>
+                                    </div>
+                                </td>
                             </tr>
                             <br/>
                             <p-table #dt [value]="ligneFret2" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
@@ -558,7 +616,7 @@
               <div class="formgrid grid">
                 <div class="field col">
                   <label for="status">Type de produit</label>
-                  <p-dropdown [options]="bagages" optionLabel="cat_nom" placeholder="Choisir..." appendTo="body" [showClear]="true" (onChange)="onBagageSelect($event)">
+                  <p-dropdown [options]="bagages" filter optionLabel="cat_nom" placeholder="Choisir..." appendTo="body" [showClear]="true" (onChange)="onBagageSelect($event)">
                     <ng-template let-option pTemplate="item">
                       <span>{{option.cat_nom}}</span>
                   </ng-template>
@@ -606,14 +664,14 @@
         </p-dialog>
 
         
-        <p-dialog [(visible)]="outBillet" [style]="{width: '500px'}" header="Impression de(s) ticket(s) frêt" [modal]="true" class="p-fluid">
+        <p-dialog [(visible)]="outBillet" [style]="{width: '500px'}" header="Impression de (s) ticket (s) frêt" [modal]="true" class="p-fluid">
             <ng-template pTemplate="left">
                 <div id="ticket-container">
                     <table class="table_ticket_fret" *ngFor="let fret of displayFretOk">
                         <tr>
                             <td colspan="2">
                                 <img id="footer-logo" [src]="'assets/layout/images/cosama.jpg'" 
-                                     alt="cosama" height="55" width="100" style="display: block;"/>
+                                     alt="cosama" height="45" width="85" style="display: block;"/>
                             </td>
                             <td colspan="2">
                                 <span class="titre_2"><b>TICKET DE FRET</b></span><br />
@@ -664,6 +722,9 @@
                                     </tr>
                                 </table>
                             </td>
+                            <td>
+                                <img *ngIf="qrCodeUrl$ | async as qr" [src]="qr" alt="QR Code" width="60" height="60"/>
+                            </td>
                         </tr>
                 
                         <tr>
@@ -688,21 +749,107 @@
             </ng-template>
         </p-dialog>
 
-        <p-dialog [(visible)]="motifDialog" [style]="{width: '500px'}" header="Fournir obligatoirement le motif de l'annulation" [modal]="true" class="p-fluid">
-            <ng-template pTemplate="content">
-              <div class="p-formgrid grid" >
-                <div class="field col">
-                    <label for="name">Motif</label>
-                    <input type="text" pInputText [(ngModel)]="motif" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.firstname}"/>
-                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.firstName">Name is required.</small>
-                </div>
-              </div>
-                               
-            </ng-template>
+        <p-dialog [(visible)]="outBillet2" [style]="{width: '400px'}" header="Pré - print du ticket" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="left">
+                <div id="ticket-content">
+                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 250px;">
 
+                <!-- Premier tableau (billet) -->
+                <table style="width: 100%; border-radius: 6px; padding: 3px;">
+                    <tr>
+                    <td style="padding: 0px; text-align: center; font-size:10px;">
+                        Tél. : 33 821 29 00 - 33 991 72 00<br/>
+                        <span style="font-size:12px;"><strong>TICKET FRET DU PASSAGER</strong></span><br/>
+                        <span style="font-size:10px;" class="titre_1">Opération n° : {{ oneCltFretEdit_.fretCode }}</span><br/>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td style="padding-top: 2px; text-align: left; font-size:10px;">
+                        <strong>Info du voyage :</strong><br/>{{ oneCltFretEdit_.voy_id | infovoyage2: voyages_ }}<br/>
+                        <strong>PESEUR :</strong> {{oneCltFretEdit_.usrLogin}} / 
+                        <strong>CAISSIER :</strong> {{oneCltFretEdit_.fretPayUsr}}
+                    </td>
+                    </tr>
+                    <tr>
+                    <td style="padding-top: 0px; text-align: left; font-size:10px;">
+                        <strong>Expéditeur :</strong> {{oneCltFretEdit_.fretCltDTO.firstname}} {{oneCltFretEdit_.fretCltDTO.lastname}}<br/>
+                        <strong>Destinataire :</strong> {{oneCltFretEdit_.firstnameDest}} {{oneCltFretEdit_.lastnameDest}}
+                    </td>
+                    </tr>
+                </table>
+
+                <!-- Deuxième tableau (contenu fret) -->
+                <table style="width: 100%; border-radius: 6px; padding: 2px;">
+                    <tbody>
+                    <ng-container *ngFor="let fret of ligneFret3">
+                        <tr>
+                       <td colspan="3" style="padding: 0px; text-align: left; font-size:10px; border: 1px solid black;
+                                word-wrap: break-word; overflow-wrap: anywhere; white-space: normal;">
+                            {{getCategorieDetails(fret.cat_id)}}<br/>
+                            ({{fret.details}})
+                        </td>
+                        </tr>
+                        <tr>
+                        <td style="padding-top: 1px; font-size:10px; border: 1px solid black;">
+                            <p *ngIf="fret.quantity>0">Qté : <b>{{fret.quantity}}</b></p>
+                            <p *ngIf="fret.weight>0">Poids : <b>{{fret.weight}}</b></p>
+                            <p *ngIf="fret.volume>0">Volume : <b>{{fret.volume}}</b></p>
+                        </td>
+                        <td style="padding-top: 1px; font-size:10px; border: 1px solid black;">
+                            PU : <b>{{getBagagePU(fret.cat_id)}}</b>
+                        </td>
+                        <td style="padding-top: 1px; font-size:10px; border: 1px solid black;">
+                            Montant : <b>{{getBagagePU(fret.cat_id) * (fret.quantity || fret.volume || fret.weight)}}</b>
+                        </td>
+                        </tr>
+                    </ng-container>
+
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Montant total hors taxe : <b>{{calculateTotal3() || 0}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Remise : <b>{{oneCltFretEdit.fretRemise}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Montant avec remise : <b>{{oneCltFretEdit.fretMontant_ht}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">TVA : <b>{{oneCltFretEdit.fretTva}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Montant TTC : <b>{{oneCltFretEdit.fretMontant}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="padding: 2px; text-align: center; font-size: 5px;">-*-*-*-*-*-*-*-*-</td></tr>
+                    <tr><td colspan="3" style="padding: 2px; text-align: center; font-size: 8px;"><b>Conservez ce ticket jusqu'à votre destination</b></td></tr>
+                    <tr><td colspan="3" style="padding: 2px; text-align: center; font-size: 8px;"><em>Le COSAMA vous remercie de votre confiance <br/> et vous souhaite un bon voyage</em></td></tr>
+                    </tbody>
+                </table>
+
+                </div>
+                    
+                </div>
+            
+                <!-- Bouton pour imprimer uniquement le ticket -->
+                </ng-template>            
+            
             <ng-template pTemplate="footer">
-                <button pButton pRipple label="Ajouter" icon="pi pi-check" class="p-button-text" (click)="cancelFret()"></button>
+                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printTicket_()"></button>
             </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="motifDialog" [style]="{width: '500px'}" 
+                header="Fournir obligatoirement le motif de l'annulation" 
+                [modal]="true" class="p-fluid">
+
+        <ng-template pTemplate="content">
+            <div class="p-formgrid grid">
+            <div class="field col">
+                <label for="motif">Motif</label>
+                <input type="text" pInputText [(ngModel)]="motif" autofocus/>
+                <small class="p-error" *ngIf="submitted && (!motif || motif.length < 5)">
+                Le motif doit contenir au moins 5 caractères.
+                </small>
+            </div>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <button pButton pRipple label="Ajouter" icon="pi pi-check" 
+                    class="p-button-text" 
+                    (click)="cancelFret()">
+            </button>
+        </ng-template>
+
         </p-dialog>
 
     </div>

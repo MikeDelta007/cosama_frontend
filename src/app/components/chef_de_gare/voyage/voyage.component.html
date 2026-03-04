@@ -79,7 +79,7 @@
                                                     <h4
                                                         [ngStyle]="{
                                                         'margin': '0',
-                                                        'font-size': '15px',
+                                                        'font-size': '12px',
                                                         'line-height': '1.2',
                                                         'color': isToday(voyage.voy_datedpt) ? 'black' : 'white'
                                                         }"
@@ -117,45 +117,35 @@
                                     </p-dropdown>
                                 </div>
                 
-                                <div class="field" style="display: flex; align-items: center; gap: 10px;">
+                                <!-- Date de départ / Date d'arrivée -->
+                                    <div class="field" style="display: flex; align-items: center; gap: 10px;">
                                     <div style="flex: 1;">
-                                        <label for="name">Date de départ</label>
-                                        <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="voyageCreate.voy_datedpt" [showIcon]="true" inputId="icon" appendTo="body">
-                                        </p-calendar>
-                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !voy_datedpt">Name is required.</small>
+                                        <label for="voy_datedpt">Date de départ</label>
+                                        <p-calendar [(ngModel)]="voyageCreate.voy_datedpt" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"></p-calendar>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && sameDates">
+                                        La date de départ doit être différente de la date d'arrivée.
+                                        </small>
                                     </div>
-                                    
                                     <div style="flex: 1;">
-                                        <label for="status">Départ</label>
-                                        <p-dropdown [(ngModel)]="voyageCreate.voy_depart" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body">
-                                            <ng-template let-ville pTemplate="item">
-                                                <span>{{ville.vil_nom}}</span>
-                                            </ng-template>
-                                        </p-dropdown>
+                                        <label for="voy_datearriv">Date d'arrivée</label>
+                                        <p-calendar [(ngModel)]="voyageCreate.voy_datearriv" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"></p-calendar>
                                     </div>
-                                
-                                    
-                                </div>
-                                
-                                <div class="field" style="display: flex; align-items: center; gap: 10px;">
+                                    </div>
+
+                                    <!-- Départ / Destination -->
+                                    <div class="field" style="display: flex; align-items: center; gap: 10px;">
                                     <div style="flex: 1;">
-                                        <label for="name">Date d'arrivé</label>
-                                        <p-calendar name="voy_datearriv" dateFormat="dd/mm/yy" [(ngModel)]="voyageCreate.voy_datearriv" [showIcon]="true" inputId="icon" appendTo="body">
-                                        </p-calendar>
-                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !voy_datearriv">Name is required.</small>
+                                        <label for="voy_depart">Départ</label>
+                                        <p-dropdown [(ngModel)]="voyageCreate.voy_depart" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body"></p-dropdown>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && sameCities">
+                                        La ville de départ doit être différente de la destination.
+                                        </small>
                                     </div>
-                                    
                                     <div style="flex: 1;">
-                                        <label for="status">Destination</label>
-                                        <p-dropdown [(ngModel)]="voyageCreate.voy_destination" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body">
-                                            <ng-template let-ville pTemplate="item">
-                                                <span>{{ville.vil_nom}}</span>
-                                            </ng-template>
-                                        </p-dropdown>
+                                        <label for="voy_destination">Destination</label>
+                                        <p-dropdown [(ngModel)]="voyageCreate.voy_destination" optionValue="vil_id" optionLabel="vil_nom" [options]="villes" placeholder="Choisir..." appendTo="body"></p-dropdown>
                                     </div>
-                                
-                                    
-                                </div>
+                                    </div>
 
                             </ng-template>
                 
@@ -173,7 +163,7 @@
                                   <div class="p-inputgroup">
                                     <input type="text" [(ngModel)]="mt.motif" pInputText required autofocus />
                                   </div>
-                                  <small class="ng-dirty ng-invalid" >Obligatoire</small>
+                                  
                                 </div>
                                          
                               </div>
