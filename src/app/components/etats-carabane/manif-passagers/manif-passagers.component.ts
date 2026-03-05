@@ -3,22 +3,31 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { Product } from 'src/app/demo/domain/product';
 import { ProductService } from 'src/app/demo/service/productservice';
+import { Bateau } from 'src/app/model/Bateau.model';
 import { Categorie } from 'src/app/model/Categorie.model';
 import { CategorieBagage } from 'src/app/model/CategorieBagage.model';
 import { CategorieCreate } from 'src/app/model/CategorieCreate';
 import { CategoriePlace } from 'src/app/model/CategoriePlace.model';
+import { Country } from 'src/app/model/Country.model';
 import { Critere } from 'src/app/model/Critere.model';
 import { CritereCreate } from 'src/app/model/CritereCreate';
 import { GroupeCritereCreate } from 'src/app/model/GroupeCritereCreate';
 import { GroupeCritere } from 'src/app/model/GroupeCrt.model';
 import { ManifesteAdulte } from 'src/app/model/ManifesteAdulte.model';
 import { ManifesteBebe } from 'src/app/model/ManifesteBebe.model';
+import { Niveau } from 'src/app/model/Niveau.model';
+import { Place } from 'src/app/model/Place';
 import { TypeBagage } from 'src/app/model/TypeBagage';
 import { TypeBagageCreate } from 'src/app/model/TypeBago';
+import { TypePiece } from 'src/app/model/TypePiece.model';
 import { TypePlace } from 'src/app/model/TypePlace';
+import { Ville } from 'src/app/model/Ville.model';
 import { Voyage } from 'src/app/model/Voyage.model';
+import { BateauService } from 'src/app/services/bateau.service';
+import { BilletService } from 'src/app/services/billet.service';
 import { DeblocageplaceService } from 'src/app/services/deblocageplace.service';
 import { EtatService } from 'src/app/services/etat.service';
+import { PlaceService } from 'src/app/services/place.service';
 import { TarificationService } from 'src/app/services/tarification.service';
 import { VoyageService } from 'src/app/services/voyage.service';
 
@@ -56,9 +65,14 @@ export class ManifPassagersComponent implements OnInit {
   selectedVoyage6: any; // Pour stocker la valeur sélectionnée du dropdown voyage
   voyages: Voyage[] = []; // Pour stocker la valeur sélectionnée du dropdown voyage
   typePlaces: TypePlace[] = [];  
+  public countries: Country[] = [];
+  public typePieces: TypePiece[] = [];
+  public places: Place[] = [];
+  public villes: Ville[] = [];
+  public bateaux: Bateau[] = [];
+  niveaux: Niveau[] = [];  
   
-  constructor(private readonly dbpS: DeblocageplaceService, private readonly voyageService: VoyageService, private readonly etatService: EtatService, private readonly tarificationService: TarificationService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
-
+  constructor(private readonly bateauService: BateauService, private readonly dbpS: DeblocageplaceService, private readonly placeService : PlaceService, private readonly billetService : BilletService, private readonly voyageService: VoyageService, private readonly etatService: EtatService, private readonly tarificationService: TarificationService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
   
   ngOnInit() 
   {
@@ -73,6 +87,45 @@ export class ManifPassagersComponent implements OnInit {
         {
         this.typePlaces = response;
         console.log(this.typePlaces);
+        }
+      );
+
+      this.voyageService.getCountries().subscribe((response:any) => 
+        {
+        this.countries = response;
+        console.log(this.countries);
+        }
+      );
+
+      this.billetService.getPiece().subscribe((response:any) => {
+        this.typePieces = response;
+        console.log(this.typePieces);
+      });
+
+      this.billetService.getTypePlace().subscribe((response:any) => {
+        this.typePlaces = response;
+        console.log(this.typePlaces);
+      });
+
+      this.placeService.getPlaces().subscribe((response:any) => {
+        this.places = response;
+        console.log(this.places);
+      });
+
+      this.voyageService.getVilles().subscribe((response:any) => {
+        this.villes = response;
+        console.log(this.villes);
+      });
+
+      this.bateauService.getBateaux().subscribe((response:any) => {
+        this.bateaux = response;
+        console.log(this.bateaux);
+      });
+
+      this.placeService.getNiveaux().subscribe((response:any) => 
+        {
+        this.niveaux = response;
+        console.log(this.niveaux);
         }
       );
   }

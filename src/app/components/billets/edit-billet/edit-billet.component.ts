@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { error } from 'console';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService, PrimeNGConfig } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { AppMainComponent } from 'src/app/app.main.component';
 import { Product } from 'src/app/demo/domain/product';
@@ -201,6 +201,12 @@ export class EditBilletComponent implements OnInit {
 
   batId : number = 0;
 
+  depart : number = 0;
+
+  arrive : number = 0;
+
+  codeV : string = "";
+
   productDialog: boolean = false;
 
   productDialog2: boolean = false;
@@ -341,10 +347,26 @@ export class EditBilletComponent implements OnInit {
   codeofBillet : any;
   voyage: any;
 
-  constructor(private infovoyage2Pipe: Infovoyage2Pipe, private opsbilletService : OpsbilletsService, public appMain: AppMainComponent, private readonly authService: AuthService, private sanitizer: DomSanitizer, private bateauService : BateauService, private voyageService : VoyageService, private placeService : PlaceService, private billetService : BilletService, private productService: ProductService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
+  constructor(private config: PrimeNGConfig, private infovoyage2Pipe: Infovoyage2Pipe, private opsbilletService : OpsbilletsService, public appMain: AppMainComponent, private readonly authService: AuthService, private sanitizer: DomSanitizer, private bateauService : BateauService, private voyageService : VoyageService, private placeService : PlaceService, private billetService : BilletService, private productService: ProductService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
 
   ngOnInit() 
   {
+    this.config.setTranslation({
+      firstDayOfWeek: 1,
+      dayNames: ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"],
+      dayNamesShort: ["dim","lun","mar","mer","jeu","ven","sam"],
+      dayNamesMin: ["D","L","M","M","J","V","S"],
+      monthNames: [
+        "janvier","février","mars","avril","mai","juin",
+        "juillet","août","septembre","octobre","novembre","décembre"
+      ],
+      monthNamesShort: [
+        "janv","févr","mars","avr","mai","juin",
+        "juil","août","sept","oct","nov","déc"
+      ],
+      today: "Aujourd'hui",
+      clear: "Effacer"
+    });
 
     this.passager.billetsDTOS = this.passager.billetsDTOS || {};
     this.passager.billetsDTOS.enfantDTOS = this.passager.billetsDTOS.enfantDTOS || {
@@ -360,6 +382,7 @@ export class EditBilletComponent implements OnInit {
     this.passager = {
       billetsDTOS: { ...this.billetsDTOS } // Assure une copie propre de l'objet
     };
+    
 
     this.voyageService.getPlan2().subscribe((response:any) => 
                 {
@@ -369,7 +392,7 @@ export class EditBilletComponent implements OnInit {
                 }
               );
     
-              this.placeService.getBateaux().subscribe((response:any) => 
+    this.placeService.getBateaux().subscribe((response:any) => 
                 {
                 this.bateaux = response;
                 console.log(this.bateaux);
@@ -400,6 +423,9 @@ export class EditBilletComponent implements OnInit {
                     console.log(e.event.id);
                     this.voyId = e.event.id;
                     this.batId = e.event._def.extendedProps.batId;
+                    this.codeV = e.event._def.extendedProps.codeV;
+                    this.depart = e.event._def.extendedProps.depart;
+                    this.arrive = e.event._def.extendedProps.arrive;
                     // this.placeCheck(e.event._def.extendedProps.batId, e.event.id);
                     // this.clickedEvent = e.event;
                     // this.changedEvent.title = this.clickedEvent.title;
@@ -777,6 +803,14 @@ export class EditBilletComponent implements OnInit {
           this.passagerDialog = false;
       }
 
+      getLabel(depart: number): string {
+        const map: any = {
+          1: 'DAKAR',
+          2: 'ZIGUINCHOR'
+        };
+        return map[depart] || '';
+      }
+
       
       saveEtatBillet() 
       {
@@ -872,7 +906,7 @@ export class EditBilletComponent implements OnInit {
             if (totalMonths < 12) {
               return { age: totalMonths, temps: 'Mois' };
             } else {
-              return { age: years, temps: 'An' };
+              return { age: years, temps: 'Ans' };
             }
           }
           

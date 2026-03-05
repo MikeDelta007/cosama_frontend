@@ -961,8 +961,31 @@
 
         <p-dialog [(visible)]="passagerDialog" [style]="{width: '450px'}" header="Enregistrement du billet" [modal]="true" class="p-fluid">
             <ng-template pTemplate="content">
+                <div class="formgrid grid">
+                    <div class="col-12">
+                        <div class="p-3 border-round-lg shadow-1 surface-card flex align-items-center justify-content-between">
+                        
+                        <div class="flex flex-column gap-1">
+                            <span class="text-sm text-500 font-bold">Voyage</span>
+                            <span class="text-lg font-semibold" style="color: red;">{{ codeV }}</span>
+                        </div>
+
+                        <div class="flex flex-column gap-1">
+                            <span class="text-sm text-500 font-bold">Départ</span>
+                            <span class="text-lg font-semibold text-green-500">{{ getLabel(depart) }}</span>
+                        </div>
+
+                        <div class="flex flex-column gap-1">
+                            <span class="text-sm text-500 font-bold">Destination</span>
+                            <span class="text-lg font-semibold text-blue-500">{{ getLabel(arrive) }}</span>
+                        </div>
+
+                        </div>
+                    </div>
+                </div>
               <div class="formgrid grid">
                 <div class="field col">
+                    <br/>
                   <label for="status">Nationalité</label>
                   <p-dropdown 
                     [options]="countries" 
@@ -1028,7 +1051,7 @@
                 <div class="formgrid grid">
                     <div class="field col">
                       <label for="calendar">Date de naissance : </label>
-                      <span *ngIf="selectedDate3">{{ selectedDate3 | date:'dd/MM/yyyy' }}</span>
+                      <span *ngIf="selectedDate3"> {{ selectedDate3 | date:'dd/MM/yyyy' }}</span>
                       <p-calendar name="selectedDate3" 
                                   dateFormat="dd/mm/yy" 
                                   [(ngModel)]="selectedDate3" 
@@ -1101,7 +1124,7 @@
                     <div class="col-12" *ngIf="this.passager.valCheck === 1">
                         <h6>Date de naissance du bébé</h6>
                         <span *ngIf="ageInfo">Âge du bébé calculé : {{ ageInfo.age || 0 }} {{ ageInfo.temps || "mois" }}{{ ageInfo.temps === 'an' && ageInfo.age > 1 ? 's' : '' }}</span>
-                        <span style="padding-left: 5px; color: red; font-weight: bold;" *ngIf="ageInfo?.age > 4">Le bébé est agé</span>
+                        <span style="padding-left: 5px; color: red; font-weight: bold;" *ngIf="ageInfo?.age >= 5">Est bébé, si âge &lt; 5 ans</span>
                         <div class="formgrid grid">
                             <div class="field col">
                               <p-calendar name="selectedDate4" 
@@ -1118,7 +1141,7 @@
                 </div>
               
 
-                  <div *ngIf="this.passager.valCheck === 1 && ageInfo?.age < 4" class="formgrid grid">
+                  <div *ngIf="this.passager.valCheck === 1 && ageInfo?.age < 5" class="formgrid grid">
                     <div class="field col-7">
                         <label for="name">Nom complet de l'enfant</label>
                         <input type="text"
@@ -1130,7 +1153,7 @@
             </ng-template>
 
             <ng-template pTemplate="footer">
-                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="savePassager()"></button>
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-primary mr-2" (click)="savePassager()"></button>
             </ng-template>
         </p-dialog>
 

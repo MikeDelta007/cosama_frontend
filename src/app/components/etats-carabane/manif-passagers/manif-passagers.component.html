@@ -59,29 +59,29 @@
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Identité</span>
-                                            {{datamanifesteAdulte.typePieceId}}<br/>
+                                            {{datamanifesteAdulte.typePieceId | typePiece: typePieces}}<br/>
                                             {{datamanifesteAdulte.numeropiece}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Sexe</span>
-                                            {{datamanifesteAdulte.civilite}}
+                                            {{datamanifesteAdulte.civilite | sexe}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Nationalité</span>
-                                            {{datamanifesteAdulte.natId}}
+                                            {{datamanifesteAdulte.natId | nationality: countries}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Type place</span>
-                                            {{datamanifesteAdulte.typePlaceId}}
+                                            {{datamanifesteAdulte.typePlaceId | typePlace: typePlaces}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Niveau</span>
-                                            {{datamanifesteAdulte.plcId}}
+                                            {{datamanifesteAdulte.niveauId | niveau : niveaux}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">N° de place</span>
-                                            {{datamanifesteAdulte.plcId}}
-                                        </td> 
+                                            {{datamanifesteAdulte.plcId | infoPlace: places}}
+                                        </td>
                                     </tr>
                                 </ng-template>
                             </p-table>
@@ -113,9 +113,9 @@
                                                 <td>{{m.bilCode}}</td>
                                                 <td>{{m.firstname}} {{m.lastname}}</td>
                                                 <td>{{m.numeropiece}}</td>
-                                                <td>{{m.civilite}}</td>
-                                                <td>{{m.natId}}</td>
-                                                <td>{{m.typePieceId}}</td>
+                                                <td style="width:5%">{{m.civilite | sexe}}</td>
+                                                <td style="width:10%">{{m.natId | nationality: countries }}</td>
+                                                <td style="width:25%">{{m.typePlaceId | typePlace : typePlaces}} ({{m.plcId | infoPlace: places}})</td>
                                     </table>
                                     <!-- <table style="width: 100%; text-align: center;">
                                         <tr>
@@ -199,38 +199,38 @@
                                     <tr>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">N° de billet</span>
-                                            {{datamanifesteAdulte.bilCode}}
+                                            {{datamanifesteEnfant.bilCode}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Nom complet</span>
-                                            {{datamanifesteAdulte.firstname}}<br/>
-                                            {{datamanifesteAdulte.lastname}}
+                                            {{datamanifesteEnfant.firstname}}<br/>
+                                            {{datamanifesteEnfant.lastname}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Identité</span>
-                                            {{datamanifesteAdulte.typePieceId}}<br/>
-                                            {{datamanifesteAdulte.numeropiece}}
+                                            {{datamanifesteEnfant.typePieceId | typePiece: typePieces}}<br/>
+                                            {{datamanifesteEnfant.numeropiece}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Sexe</span>
-                                            {{datamanifesteAdulte.civilite}}
+                                            {{datamanifesteEnfant.civilite | sexe}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Nationalité</span>
-                                            {{datamanifesteAdulte.natId}}
+                                            {{datamanifesteEnfant.natId | nationality: countries}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Type place</span>
-                                            {{datamanifesteAdulte.typePlaceId}}
+                                            {{datamanifesteEnfant.typePlaceId | typePlace: typePlaces}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Niveau</span>
-                                            {{datamanifesteAdulte.plcId}}
+                                            {{datamanifesteEnfant.niveauId | niveau : niveaux}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">N° de place</span>
-                                            {{datamanifesteAdulte.plcId}}
-                                        </td> 
+                                            {{datamanifesteEnfant.plcId | infoPlace: places}}
+                                        </td>
                                     </tr>
                                 </ng-template>
                             </p-table>
@@ -356,7 +356,7 @@
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">N° de place</span>
-                                            {{datamanifesteBebe.plcId}}
+                                            {{datamanifesteBebe.plcId | infoPlace: places}}
                                         </td> 
                                     </tr>
                                 </ng-template>
@@ -387,7 +387,7 @@
                                                 <td>{{m.bilCode}}</td>
                                                 <td>{{m.firstname}} {{m.lastname}}</td>
                                                 <td>{{m.enfNomComplet}} ({{m.enfAge}} {{m.uniteTemps}})</td>
-                                                <td>{{datamanifesteBebe.plcId}}</td>
+                                                <td>{{m.plcId | infoPlace: places}}</td>
                                     </table>
                                     <!-- <table style="width: 100%; text-align: center;">
                                         <tr>
@@ -488,28 +488,28 @@
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Identité</span>
-                                            {{dataFound.typePieceId}}<br/>
+                                            {{dataFound.typePieceId | typePiece: typePieces}}<br/>
                                             {{dataFound.numeropiece}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Sexe</span>
-                                            {{dataFound.civilite}}
+                                            {{dataFound.civilite | sexe}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Nationalité</span>
-                                            {{dataFound.natId}}
+                                            {{dataFound.natId | nationality: countries}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Type place</span>
-                                            {{dataFound.typePlaceId}}
+                                            {{dataFound.typePlaceId | typePlace: typePlaces}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Niveau</span>
-                                            {{dataFound.plcId}}
+                                            {{dataFound.niveauId | niveau : niveaux}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">N° de place</span>
-                                            {{dataFound.plcId}}
+                                            {{dataFound.plcId | infoPlace: places}}
                                         </td> 
                                     </tr>
                                 </ng-template>
@@ -542,9 +542,9 @@
                                                 <td>{{m.bilCode}}</td>
                                                 <td>{{m.firstname}} {{m.lastname}}</td>
                                                 <td>{{m.numeropiece}}</td>
-                                                <td>{{m.civilite}}</td>
-                                                <td>{{m.natId}}</td>
-                                                <td>{{m.typePieceId}}</td>
+                                                <td style="width:5%">{{m.civilite | sexe}}</td>
+                                                <td style="width:10%">{{m.natId | nationality: countries }}</td>
+                                                <td style="width:25%">{{m.typePlaceId | typePlace : typePlaces}} ({{m.plcId | infoPlace: places}})</td>
                                     </table>
                                     <!-- <table style="width: 100%; text-align: center;">
                                         <tr>
@@ -644,30 +644,30 @@
                                             {{dataFound_.lastname}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
-                                            <span class="p-column-title">Identité</span>
-                                            {{dataFound_.typePieceId}}<br/>
-                                            {{dataFound_.numeropiece}}
-                                        </td>
-                                        <td style="width:14%; min-width:10rem;">
-                                            <span class="p-column-title">Sexe</span>
-                                            {{dataFound_.civilite}}
-                                        </td>
-                                        <td style="width:14%; min-width:10rem;">
-                                            <span class="p-column-title">Nationalité</span>
-                                            {{dataFound_.natId}}
-                                        </td>
-                                        <td style="width:14%; min-width:10rem;">
-                                            <span class="p-column-title">Type place</span>
-                                            {{dataFound_.typePlaceId}}
-                                        </td>
-                                        <td style="width:14%; min-width:10rem;">
-                                            <span class="p-column-title">Niveau</span>
-                                            {{dataFound_.plcId}}
-                                        </td>
-                                        <td style="width:14%; min-width:10rem;">
-                                            <span class="p-column-title">N° de place</span>
-                                            {{dataFound_.plcId}}
-                                        </td> 
+                                                <span class="p-column-title">Identité</span>
+                                                {{dataFound_.typePieceId | typePiece: typePieces}}<br/>
+                                                {{dataFound_.numeropiece}}
+                                            </td>
+                                            <td style="width:14%; min-width:10rem;">
+                                                <span class="p-column-title">Sexe</span>
+                                                {{dataFound_.civilite | sexe}}
+                                            </td>
+                                            <td style="width:14%; min-width:10rem;">
+                                                <span class="p-column-title">Nationalité</span>
+                                                {{dataFound_.natId | nationality: countries}}
+                                            </td>
+                                            <td style="width:14%; min-width:10rem;">
+                                                <span class="p-column-title">Type place</span>
+                                                {{dataFound_.typePlaceId | typePlace: typePlaces}}
+                                            </td>
+                                            <td style="width:14%; min-width:10rem;">
+                                                <span class="p-column-title">Niveau</span>
+                                                {{dataFound_.niveauId | niveau : niveaux}}
+                                            </td>
+                                            <td style="width:14%; min-width:10rem;">
+                                                <span class="p-column-title">N° de place</span>
+                                                {{dataFound_.plcId | infoPlace: places}}
+                                            </td>
                                     </tr>
                                 </ng-template>
                             </p-table>
@@ -699,9 +699,9 @@
                                                 <td>{{m.bilCode}}</td>
                                                 <td>{{m.firstname}} {{m.lastname}}</td>
                                                 <td>{{m.numeropiece}}</td>
-                                                <td>{{m.civilite}}</td>
-                                                <td>{{m.natId}}</td>
-                                                <td>{{m.typePieceId}}</td>
+                                                <td style="width:5%">{{m.civilite | sexe}}</td>
+                                                <td style="width:10%">{{m.natId | nationality: countries }}</td>
+                                                <td style="width:25%">{{m.typePlaceId | typePlace : typePlaces}} ({{m.plcId | infoPlace: places}})</td>
                                     </table>
                                     <!-- <table style="width: 100%; text-align: center;">
                                         <tr>
@@ -803,28 +803,28 @@
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Identité</span>
-                                            {{dataFound__.typePieceId}}<br/>
+                                            {{dataFound__.typePieceId | typePiece: typePieces}}<br/>
                                             {{dataFound__.numeropiece}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Sexe</span>
-                                            {{dataFound__.civilite}}
+                                            {{dataFound__.civilite | sexe}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Nationalité</span>
-                                            {{dataFound__.natId}}
+                                            {{dataFound__.natId | nationality: countries}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Type place</span>
-                                            {{dataFound__.typePlaceId}}
+                                            {{dataFound__.typePlaceId | typePlace: typePlaces}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Niveau</span>
-                                            {{dataFound__.plcId}}
+                                            {{dataFound__.nivId | niveau : niveaux}}
                                         </td>
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">N° de place</span>
-                                            {{dataFound__.plcId}}
+                                            {{dataFound__.plcId | infoPlace: places}}
                                         </td> 
                                         <td style="width:14%; min-width:10rem;">
                                             <span class="p-column-title">Téléphone</span>
@@ -861,9 +861,9 @@
                                                 <td>{{m.bilCode}}</td>
                                                 <td>{{m.firstname}} {{m.lastname}}</td>
                                                 <td>{{m.numeropiece}}</td>
-                                                <td>{{m.civilite}}</td>
-                                                <td>{{m.natId}}</td>
-                                                <td>{{m.typePieceId}}</td>
+                                                <td style="width:5%">{{m.civilite | sexe}}</td>
+                                                <td style="width:10%">{{m.natId | nationality: countries }}</td>
+                                                <td style="width:25%">{{m.typePlaceId | typePlace : typePlaces}} ({{m.plcId | infoPlace: places}})</td>
                                     </table>
                                     <!-- <table style="width: 100%; text-align: center;">
                                         <tr>
