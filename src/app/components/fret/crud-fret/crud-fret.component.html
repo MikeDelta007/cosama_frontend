@@ -1,0 +1,852 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Ajouter une nouvelle opération frêt" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                    </div>
+                </ng-template>
+            </p-toolbar>
+
+            <p-tabView>
+                <p-tabPanel *ngFor="let situ of getFretByState_" [header]="situ.statut">
+                  <p-table #dt [value]="situ.frets" scrollable="true" scrollHeight="400px" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['fretCode']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                    <ng-template pTemplate="caption">
+                      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                          <h5 class="m-0">Gestion des frêts</h5>
+                          <span class="block mt-2 md:mt-0 p-input-icon-left">
+                              <i class="pi pi-search"></i>
+                              <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                          </span>
+                      </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th filter sortable pSortableColumn="fretCode">Frêt N°</th>
+                        <th pSortableColumn="name">Voyage<p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="price">Expéditeur du frêt<p-sortIcon field="price"></p-sortIcon></th>
+                        <th pSortableColumn="category">Opérations Frêt<p-sortIcon field="category"></p-sortIcon></th>
+                      </tr>
+                    </ng-template>
+              
+                    <ng-template pTemplate="body" let-fret>
+                        <tr>
+                            <td style="width:15%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                {{fret.fretCode}}
+                            </td>
+                            <td style="width:10%; min-width:10rem;">
+                                <span class="p-column-title">Name</span>
+                                {{ fret.voy_id | voyage: voyages_ }}<br/>
+                                {{ fret.voy_id | infobateau: bateaux : voyages_ }}
+                            </td>
+                            <td style="width:25%; min-width:8rem;">
+                                <span class="p-column-title">Price</span>
+                                {{fret.fretCltDTO.firstname + " " + fret.fretCltDTO.lastname}}
+                            </td>
+                            <td>
+                                <div class="flex align-items-center flex-wrap gap-2">
+                                    <button *ngIf="fret.applyPayment || !fret.fretEtat" pButton pRipple iconPos="left" class="p-button-rounded p-button-warning p-button-sm action-btn" (click)="openNew4(fret)">
+                                        <i class="pi pi-eye" style="margin-right: 8px;"></i>Voir
+                                    </button> 
+                                    
+                                    <button *ngIf="!fret.applyPayment && fret.fretEtat" pButton pRipple iconPos="left" class="p-button-rounded p-button-primary p-button-sm action-btn" (click)="editFret(fret)">
+                                        <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer<template></template>
+                                    </button> 
+    
+                                    <button *ngIf="fret.fretEtat && profil.cancel_fret" pButton pRipple iconPos="left" class="p-button-rounded p-button-help p-button-sm action-btn" (click)="printTicketFret(fret)">
+                                        <i class="pi pi-print" style="margin-right: 8px;"></i>Ticket frêt
+                                    </button> 
+
+                                    <button *ngIf="fret.applyPayment" pButton pRipple iconPos="left" class="p-button-rounded p-button-help p-button-sm action-btn" (click)="printTicketPassager(fret)">
+                                        <i class="pi pi-print" style="margin-right: 8px;"></i>Ticket Passager
+                                    </button> 
+    
+                                    <button *ngIf="fret.fretEtat && profil.cancel_fret" pButton pRipple iconPos="left" class="p-button-rounded p-button-danger p-button-sm action-btn" (click)="motifNew(fret)">
+                                        <i class="pi pi-times" style="margin-right: 8px;"></i>Annuler
+                                    </button> 
+                                   <td [ngStyle]="{
+                                        'background-color': fret.fretEtat ? 'lightgreen' : 'orangered',
+                                        'padding': '10px 12px',
+                                        'border-radius': '8px'
+                                        }">
+                                    <h5 style="margin: 0; font-size: 12px; line-height: 1.2; color: black;">
+                                        <ng-container *ngIf="fret.fretEtat; else elseBlock">
+                                        Frêt actif
+                                        </ng-container>
+                                        <ng-template #elseBlock>
+                                        Frêt annulé
+                                        </ng-template>
+                                    </h5>
+                                    </td>
+
+                                </div>
+                            </td>
+                        </tr>
+    
+                    </ng-template>
+                  </p-table>
+                </p-tabPanel>
+              </p-tabView>
+        </div>
+
+        <p-dialog [(visible)]="productDialog" [style]="{width: '1250px'}" header="Opération Frêt" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="grid">
+                    <div class="col-12 md:col-12">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td>Bateau</td>
+                                <td style="padding-left: 10px; padding-right: 10px;">
+                                    <p-dropdown [(ngModel)]="selectedBateau" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux" placeholder="Choisir..." appendTo="body" (onChange)="onBoatSelected()">
+                                        <ng-template let-bateau pTemplate="item">
+                                            <span>{{bateau.bat_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </td>
+                                <td style="padding-left: 5px; padding-right: 10px;">
+                                     
+                                    <p-dropdown [(ngModel)]="selectedVoyage" optionValue="voy_id" optionLabel="code_voyage" [options]="voyages" placeholder="Choisir..." appendTo="body" (onChange)="onVoySelected()">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{voyage.code_voyage + " du " + this.formatDateToFrench(voyage.voy_datedpt)}}</span>
+                                        </ng-template>
+                                    </p-dropdown> 
+                                </td>
+                                <td style="padding-right: 10px;">
+                                    <p-checkbox binary="true" [(ngModel)]="checked2" (onChange)="onCheckChange2($event)">
+                                    </p-checkbox>
+                                </td>
+                                <td>Client en compte ?</td>
+                                <td *ngIf="this.checked2" style="padding-left: 10px;">
+                                    <p-dropdown [(ngModel)]="selectedCltCmpt" optionValue="cltcmptId" optionLabel="raisonSocial" [options]="cltEnComptes" placeholder="Désigner le client en compte" appendTo="body" [showClear]="true" (onChange)="onDropdownChange1()">
+                                        <ng-template let-cltEnCmpt pTemplate="item">
+                                            <span>{{cltEnCmpt.raisonSocial}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </td>
+                                <td *ngIf="this.checked2" style="padding-left: 10px;">Solde du compte : {{solde || 0}} FCFA</td>
+                            </tr>
+                        </div>
+                    </div>         
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <h5>Expéditeur</h5>
+                            <div class="p-formgrid grid" *ngIf="this.v !== null">
+                                <div class="field col">
+                                    <tr>
+                                        <td>N° Billet </td>
+                                        <td style="padding-left: 10px;">
+                                            <input pInputText id="le_billet" [(ngModel)]="codeBillet" type="text" placeholder="Fournir le n° de billet" (input)="onSaisieChange()" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prénom & Nom </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Prénom (s)" [(ngModel)]="passager.firstName" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="Nom" [(ngModel)]="passager.lastName" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacts </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Téléphone" [(ngModel)]="passager.phone" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="E-mail" [(ngModel)]="passager.mail" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Piéce d'identité </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="N° de pièce" [(ngModel)]="passager.numeropiece" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>          
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td><h5>Destinataire</h5></td>
+                                <td style="padding-left: 10px;" *ngIf="this.v !== null"><p-checkbox binary="true" [(ngModel)]="checked" (onChange)="onCheckChange($event)"></p-checkbox></td>
+                                <td style="padding-left: 10px;" *ngIf="this.v !== null">Si expéditeur ?</td>
+                            </tr>
+                            <div class="p-formgrid grid" *ngIf="this.v !== null">
+                                <div class="field col">
+                                    <tr>
+                                    </tr>
+                                    <tr>
+                                        <td>Prénom & Nom </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Prénom (s)" [(ngModel)]="passager2.firstName" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="Nom" [(ngModel)]="passager2.lastName" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacts </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Téléphone" [(ngModel)]="passager2.phone" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="E-mail" [(ngModel)]="passager2.mail" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </div>
+                        </div>
+                
+                    </div>
+                    <div class="col-12 md:col-12">
+                        <div class="card p-fluid" *ngIf="this.v !== null">
+                            <tr>
+                                <td>
+                                    <button pButton pRipple label="Ajouter une nouvelle ligne frêt" icon="pi pi-download" class="p-button-success mr-2" (click)="openNew2()"></button>
+                                </td>
+
+                                <td style="padding-left: 10px;">
+                                    <h4>Prix Total HT : {{this.calculateTotal() || 0}} FCFA</h4>
+                                </td>
+                            </tr>
+                            <br/>
+                            <p-table #dt [value]="ligneFret" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                               
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Actions</th>
+                                        <th pSortableColumn="code">Type de produits</th>
+                                        <th pSortableColumn="name">Quantité/Poids/Volume</th>
+                                        <th pSortableColumn="rating">PU</th>
+                                        <th pSortableColumn="inventoryStatus">Montant</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-lignef>
+                                    <tr>
+                                        <td style="width:15%; min-width:10rem;">
+                                            <div class="flex">
+                                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteProduct(product)"></button>
+                                            </div>
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                            {{getCategorieDetails(lignef.cat_id)}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            <span class="p-column-title">Name</span>
+                                            {{lignef.quantity}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            <span class="p-column-title">Name</span>
+                                            {{getBagagePU(lignef.cat_id)}}
+                                        </td>
+                                        <td style="width:15%; min-width:8rem;">
+                                            <span class="p-column-title">Price</span>
+                                            {{getBagagePU(lignef.cat_id) * lignef.quantity}}
+                                        </td>                                      
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>  
+                
+                </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <button *ngIf="this.v !== null" pButton pRipple label="Valider l'opération" icon="pi pi-check" class="p-button-primary mr-2" (click)="validerOps()"></button>
+        </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog2" [style]="{width: '950px'}" header="Saisir une nouvelle ligne frêt" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Type de produit</label>
+                  <p-dropdown [options]="bagages" filter="true"
+                        filterBy="cat_nom" optionLabel="cat_nom" placeholder="Choisir..." appendTo="body" [showClear]="true" (onChange)="onBagageSelect($event)">
+                    <ng-template let-option pTemplate="item">
+                      <span>{{option.cat_nom}}</span>
+                  </ng-template>
+                  </p-dropdown>
+                </div>
+              </div>
+                
+                <div class="field">
+                    <label for="name">Description</label>
+                    <input type="text" pInputText [(ngModel)]="detail" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.firstname}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.firstName">Name is required.</small>
+                </div>
+                <div class="field">
+                    <!-- Quantité -->
+                    <div class="field" *ngIf="selectedBagage2?.vol_id === 1">
+                        <label for="quantite">Quantité</label>
+                        <input
+                        id="quantite"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="unit"
+                        required
+                        />
+                    </div>
+
+                    <!-- Poids -->
+                    <div class="field" *ngIf="[1,2,3].includes(selectedBagage2?.vol_id)">
+                        <label for="poids">Poids (KG)</label>
+                        <input
+                        id="poids"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="qte"
+                        required
+                        />
+                    </div>
+
+                    <!-- Volume -->
+                    <div class="field" *ngIf="selectedBagage2?.vol_id === 3">
+                        <label for="volume">Volume</label>
+                        <input
+                        id="volume"
+                        type="text"
+                        pInputText
+                        [(ngModel)]="vol"
+                        required
+                        />
+                    </div>
+
+                    </div> 
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Ajouter" icon="pi pi-check" class="p-button-text" (click)="addLineFret()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog3" [style]="{width: '1250px'}" header="Modifier l'opération de frêt" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="grid">
+                    <!-- <div class="col-12 md:col-12">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td>Bateau</td>
+                                <td style="padding-left: 10px; padding-right: 10px;">
+                                    <p-dropdown [(ngModel)]="selectedBateau" optionValue="bat_id" optionLabel="bat_nom" [options]="bateaux"placeholder="Choisir..." appendTo="body" (onChange)="onBoatSelected()">
+                                        <ng-template let-bateau pTemplate="item">
+                                            <span>{{bateau.bat_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </td>
+                                <td style="padding-left: 5px; padding-right: 10px;">
+                                    <input pInputText [(ngModel)]="voyageOfDay" type="text" placeholder="Infos du voyage" class="w-32 sm:w-auto"/>     
+                                </td>
+                                <td style="padding-right: 10px;">
+                                    <p-checkbox binary="true" [(ngModel)]="checked2" (onChange)="onCheckChange2($event)">
+                                    </p-checkbox>
+                                </td>
+                                <td>Client en compte ?</td>
+                                <td style="padding-left: 10px;">
+                                    <p-dropdown [(ngModel)]="selectedCltCmpt" optionValue="cltcmptId" optionLabel="raisonSocial" [options]="cltEnComptes" placeholder="Désigner le client en compte" appendTo="body" [showClear]="true" (onChange)="onDropdownChange1()">
+                                        <ng-template let-cltEnCmpt pTemplate="item">
+                                            <span>{{cltEnCmpt.raisonSocial}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </td>
+                                <td style="padding-left: 10px;">Solde du compte : {{solde || 0}} FCFA</td>
+                            </tr>
+                        </div>
+                    </div>          -->
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <h5>Expéditeur</h5>
+                            <div class="p-formgrid grid">
+                                <div class="field col">
+                                    <tr>
+                                        <td>N° Billet </td>
+                                        <td style="padding-left: 10px;">
+                                            <input pInputText id="le_billet" [(ngModel)]="codeBillet" type="text" placeholder="Fournir le n° de billet" (input)="onSaisieChange()" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prénom & Nom </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Prénom (s)" [(ngModel)]="oneCltFretEdit.fretCltDTO.firstname" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="Nom" [(ngModel)]="oneCltFretEdit.fretCltDTO.lastname" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacts </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Téléphone" [(ngModel)]="oneCltFretEdit.fretCltDTO.telephone" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="E-mail" [(ngModel)]="oneCltFretEdit.fretCltDTO.email" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Piéce d'identité </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="N° de pièce" [(ngModel)]="oneCltFretEdit.numeropiece" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>          
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td><h5>Destinataire</h5></td>
+                                <td style="padding-left: 10px;"><p-checkbox binary="true" [(ngModel)]="checked" (onChange)="onCheckChange3($event)"></p-checkbox></td>
+                                <td style="padding-left: 10px;">Si expéditeur ?</td>
+                            </tr>
+                            <div class="p-formgrid grid">
+                                <div class="field col">
+                                    <tr>
+                                    </tr>
+                                    <tr>
+                                        <td>Prénom & Nom </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Prénom (s)" [(ngModel)]="oneCltFretEdit.firstnameDest" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="Nom" [(ngModel)]="oneCltFretEdit.lastnameDest" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacts </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Téléphone" [(ngModel)]="oneCltFretEdit.telephoneDest" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="E-mail" [(ngModel)]="oneCltFretEdit.emailDest" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </div>
+                        </div>
+                
+                    </div>
+                    <div class="col-12 md:col-12">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td>
+                                    <button pButton pRipple label="Ajouter une nouvelle ligne frêt" icon="pi pi-download" class="p-button-success mr-2" (click)="openNew3()"></button>
+                                </td>
+
+                               
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                        <div class="price-container">
+                                            <label class="price-box">
+                                                Prix Total HT : {{ calculateTotal2() || 0 }} FCFA
+                                            </label>
+
+                                            <label class="price-box">
+                                                Prix TTC : {{ (1.18 * calculateTotal2()) || 0 }} FCFA
+                                            </label>
+                                            </div>
+                                    </div>
+                            </tr>
+                            <br/>
+                            <p-table #dt [value]="ligneFret2" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                               
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Actions</th>
+                                        <th pSortableColumn="code">Type de produits</th>
+                                        <th pSortableColumn="name">Quantité/Poids/Volume</th>
+                                        <th pSortableColumn="rating">PU</th>
+                                        <th pSortableColumn="inventoryStatus">Montant</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-lignef2>
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">
+                                            <div class="flex">
+                                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="confirmDelete(lignef2)"></button>
+                                            </div>
+                                        </td>
+                                        <td style="width:30%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                            {{getBagageDetails(lignef2.tbg_id)}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            <span class="p-column-title">Name</span>
+                                            {{lignef2.quantity || lignef2.volume || lignef2.weight}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            <span class="p-column-title">Name</span>
+                                            {{getBagagePU(lignef2.cat_id)}}
+                                        </td>
+                                        <td style="width:15%; min-width:8rem;">
+                                            <span class="p-column-title">Price</span>
+                                            {{getBagagePU(lignef2.cat_id) * (lignef2.quantity || lignef2.volume || lignef2.weight)}}
+                                        </td>                                      
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>  
+                
+                </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <button pButton pRipple label="Valider la modification de l'opération" icon="pi pi-check" class="p-button-text" (click)="validerOps2()"></button>
+        </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog5" [style]="{width: '1250px'}" header="Consulter l'opération de frêt" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="grid">     
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <h5>Expéditeur</h5>
+                            <div class="p-formgrid grid">
+                                <div class="field col">
+                                    <tr>
+                                        <td>N° Billet </td>
+                                        <td style="padding-left: 10px;">
+                                            <input pInputText id="le_billet" [(ngModel)]="codeBillet" type="text" placeholder="Fournir le n° de billet" (input)="onSaisieChange()" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prénom & Nom </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Prénom (s)" [(ngModel)]="oneCltFretEdit.fretCltDTO.firstname" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="Nom" [(ngModel)]="oneCltFretEdit.fretCltDTO.lastname" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacts </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Téléphone" [(ngModel)]="oneCltFretEdit.fretCltDTO.telephone" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="E-mail" [(ngModel)]="oneCltFretEdit.fretCltDTO.email" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Piéce d'identité </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="N° de pièce" [(ngModel)]="oneCltFretEdit.numeropiece" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>          
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td><h5>Destinataire</h5></td>
+                            </tr>
+                            <div class="p-formgrid grid">
+                                <div class="field col">
+                                    <tr>
+                                    </tr>
+                                    <tr>
+                                        <td>Prénom & Nom </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Prénom (s)" [(ngModel)]="oneCltFretEdit.firstnameDest" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="Nom" [(ngModel)]="oneCltFretEdit.lastnameDest" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacts </td>
+                                        <td style="display: flex; align-items: center; padding-left: 10px;">
+                                            <input pInputText type="text" placeholder="Téléphone" [(ngModel)]="oneCltFretEdit.telephoneDest" class="w-32 sm:w-auto"/>
+                                            <input pInputText type="text" placeholder="E-mail" [(ngModel)]="oneCltFretEdit.emailDest" class="w-32 sm:w-auto"/>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </div>
+                        </div>
+                
+                    </div>
+                    <div class="col-12 md:col-12">
+                        <div class="card p-fluid">
+                            <tr>
+                                <td
+                                    style="padding-left: 10px;"
+                                    [ngStyle]="{'background-color': oneCltFretEdit.applyPayment ? 'lightgreen' : 'yellow'}"
+                                    >
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <div class="price-container">
+                                            <label class="price-box">
+                                                Prix Total HT : {{ calculateTotal2()|| 0 }} FCFA
+                                            </label>
+
+                                            <label class="price-box">
+                                                Prix TTC : {{ (1.18 * calculateTotal2()) || 0 }} FCFA
+                                            </label>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <br/>
+                            <p-table #dt [value]="ligneFret2" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                               
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="code">Type de produits</th>
+                                        <th pSortableColumn="name">Quantité/Poids/Volume</th>
+                                        <th pSortableColumn="rating">PU</th>
+                                        <th pSortableColumn="inventoryStatus">Montant</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-lignef2>
+                                    <tr>
+                                        <td style="width:30%; min-width:10rem;"><span class="p-column-title">Code</span>
+                                            {{getBagageDetails(lignef2.tbg_id)}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            <span class="p-column-title">Name</span>
+                                            {{lignef2.quantity || lignef2.volume || lignef2.weight}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            <span class="p-column-title">Name</span>
+                                            {{getBagagePU(lignef2.cat_id)}}
+                                        </td>
+                                        <td style="width:15%; min-width:8rem;">
+                                            <span class="p-column-title">Price</span>
+                                            {{getBagagePU(lignef2.cat_id) * (lignef2.quantity || lignef2.volume || lignef2.weight)}}
+                                        </td>                                      
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>  
+                
+                </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+           
+        </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog4" [style]="{width: '450px'}" header="Saisir une nouvelle ligne frêt" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Type de produit</label>
+                  <p-dropdown [options]="bagages" filter optionLabel="cat_nom" placeholder="Choisir..." appendTo="body" [showClear]="true" (onChange)="onBagageSelect($event)">
+                    <ng-template let-option pTemplate="item">
+                      <span>{{option.cat_nom}}</span>
+                  </ng-template>
+                  </p-dropdown>
+                </div>
+              </div>
+                
+                <div class="field">
+                    <label for="name">Description</label>
+                    <input type="text" pInputText [(ngModel)]="detail" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.firstname}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.firstName">Name is required.</small>
+                </div>
+                <div class="field">
+                  <label for="name">Quantité</label>
+                    <input type="text" pInputText [(ngModel)]="qte_unit_vol" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.lastname}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.lastName">Name is required.</small>
+                </div>   
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Ajouter" icon="pi pi-check" class="p-button-text" (click)="addLineFret2()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteProductDialog" header="Suppression du produit frêt provisoire" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="product">Voulez vous supprimé le produit du frêt ?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="deleteProductDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="confirmDelete_(lignef)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteProductDialog3" header="Solde insuffisant" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-ban mr-3" style="font-size: 2rem"></i>
+                <span style = "text-align : justify">Désolé, le solde actuel du client ({{solde}} FCFA) est insuffisant pour couvrir le montant total TTC du frêt, {{this.calculateTotal() * 1.18}} FCFA. Merci de votre compréhension
+                </span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Je comprends" (click)="closeSoldeIns()"></button>
+            </ng-template>
+        </p-dialog>
+
+        
+        <p-dialog [(visible)]="outBillet" [style]="{width: '500px'}" header="Impression de (s) ticket (s) frêt" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="left">
+                <div id="ticket-container">
+                    <table class="table_ticket_fret" *ngFor="let fret of displayFretOk">
+                        <tr>
+                            <td colspan="2">
+                                <img id="footer-logo" [src]="'assets/layout/images/cosama.jpg'" 
+                                     alt="cosama" height="45" width="85" style="display: block;"/>
+                            </td>
+                            <td colspan="2">
+                                <span class="titre_2"><b>TICKET DE FRET</b></span><br />
+                                <span class="valuet">N° : {{ fret.fretCode }}</span>
+                            </td>
+                        </tr>
+                
+                        <tr>
+                            <td colspan="2" class="valuet">
+                                <b><u>Voyage</u> : </b>{{ fret.voyId | infovoyage2: voyages_ }}<br/>
+                            </td>
+                        </tr>
+                
+                        <tr>
+                            <td colspan="2">
+                                <table>
+                                    <tr><td class="titre_2t"><u><b>Expéditeur</b> :</u></td></tr>
+                                    <tr><td class="valuet">{{ fret.clientFirstname + " " + fret.clientLastname }}</td></tr>
+                                </table>
+                            </td>
+                
+                            <td colspan="2">
+                                <table>
+                                    <tr><td class="titre_2t"><u><b>Destinataire</b> :</u></td></tr>
+                                    <tr><td class="valuet">{{ fret.firstnameDest + " " + fret.lastnameDest }}</td></tr>
+                                </table>
+                            </td>
+                        </tr>
+                
+                        <tr>
+                            <td colspan="3">
+                                <table>
+                                    <tr>
+                                        <td class="titre_2t" colspan="3"><u><b>Produit</b> : </u></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="valuet" colspan="3">{{ "(" + fret.details + ")" }}</td>
+                                    </tr>
+                                    <tr *ngIf="fret.quantity > 0 || fret.weight > 0 || fret.volume > 0">
+                                        <td class="titre_2t" *ngIf="fret.quantity>0"><u><b>Quantité</b> : </u></td>
+                                        <td class="titre_2t" *ngIf="fret.weight>0"><u><b>Poids</b> : </u></td>
+                                        <td class="titre_2t" *ngIf="fret.volume>0"><u><b>Volume</b> : </u></td>
+                                    </tr>
+                                    <tr *ngIf="fret.quantity > 0 || fret.weight > 0 || fret.volume > 0">
+                                        <td class="valuet" *ngIf="fret.quantity>0">{{ fret.quantity }}</td>
+                                        <td class="valuet" *ngIf="fret.weight>0">{{ fret.weight }}</td>
+                                        <td class="valuet" *ngIf="fret.volume>0">{{ fret.volume }}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td>
+                                <img *ngIf="qrCodeUrl$ | async as qr" [src]="qr" alt="QR Code" width="60" height="60"/>
+                            </td>
+                        </tr>
+                
+                        <tr>
+                            <td colspan="4">
+                                <span class="pied_paget">Le COSAMA vous remercie et vous souhaite bon voyage.</span>
+                            </td>
+                        </tr>
+                    </table>                
+                </div>
+                 
+                <!-- Bouton pour imprimer uniquement le ticket -->
+                </ng-template>            
+            
+            <ng-template pTemplate="footer">
+                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printTicket()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="outBillet2" [style]="{width: '400px'}" header="Pré - print du ticket" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="left">
+                <div id="ticket-content">
+                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 250px;">
+
+                <!-- Premier tableau (billet) -->
+                <table style="width: 100%; border-radius: 6px; padding: 3px;">
+                    <tr>
+                    <td style="padding: 0px; text-align: center; font-size:10px;">
+                        Tél. : 33 821 29 00 - 33 991 72 00<br/>
+                        <span style="font-size:12px;"><strong>TICKET FRET DU PASSAGER</strong></span><br/>
+                        <span style="font-size:10px;" class="titre_1">Opération n° : {{ oneCltFretEdit_.fretCode }}</span><br/>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td style="padding-top: 2px; text-align: left; font-size:10px;">
+                        <strong>Info du voyage :</strong><br/>{{ oneCltFretEdit_.voy_id | infovoyage2: voyages_ }}<br/>
+                        <strong>PESEUR :</strong> {{oneCltFretEdit_.usrLogin}} / 
+                        <strong>CAISSIER :</strong> {{oneCltFretEdit_.fretPayUsr}}
+                    </td>
+                    </tr>
+                    <tr>
+                    <td style="padding-top: 0px; text-align: left; font-size:10px;">
+                        <strong>Expéditeur :</strong> {{oneCltFretEdit_.fretCltDTO.firstname}} {{oneCltFretEdit_.fretCltDTO.lastname}}<br/>
+                        <strong>Destinataire :</strong> {{oneCltFretEdit_.firstnameDest}} {{oneCltFretEdit_.lastnameDest}}
+                    </td>
+                    </tr>
+                </table>
+
+                <!-- Deuxième tableau (contenu fret) -->
+                <table style="width: 100%; border-radius: 6px; padding: 2px;">
+                    <tbody>
+                    <ng-container *ngFor="let fret of ligneFret3">
+                        <tr>
+                       <td colspan="3" style="padding: 0px; text-align: left; font-size:10px; border: 1px solid black;
+                                word-wrap: break-word; overflow-wrap: anywhere; white-space: normal;">
+                            {{getCategorieDetails(fret.cat_id)}}<br/>
+                            ({{fret.details}})
+                        </td>
+                        </tr>
+                        <tr>
+                        <td style="padding-top: 1px; font-size:10px; border: 1px solid black;">
+                            <p *ngIf="fret.quantity>0">Qté : <b>{{fret.quantity}}</b></p>
+                            <p *ngIf="fret.weight>0">Poids : <b>{{fret.weight}}</b></p>
+                            <p *ngIf="fret.volume>0">Volume : <b>{{fret.volume}}</b></p>
+                        </td>
+                        <td style="padding-top: 1px; font-size:10px; border: 1px solid black;">
+                            PU : <b>{{getBagagePU(fret.cat_id)}}</b>
+                        </td>
+                        <td style="padding-top: 1px; font-size:10px; border: 1px solid black;">
+                            Montant : <b>{{getBagagePU(fret.cat_id) * (fret.quantity || fret.volume || fret.weight)}}</b>
+                        </td>
+                        </tr>
+                    </ng-container>
+
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Montant total hors taxe : <b>{{calculateTotal3() || 0}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Remise : <b>{{oneCltFretEdit.fretRemise}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Montant avec remise : <b>{{oneCltFretEdit.fretMontant_ht}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">TVA : <b>{{oneCltFretEdit.fretTva}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="background-color: gainsboro; font-size:10px; border: 1px solid black;">Montant TTC : <b>{{oneCltFretEdit.fretMontant}} FCFA</b></td></tr>
+                    <tr><td colspan="3" style="padding: 2px; text-align: center; font-size: 5px;">-*-*-*-*-*-*-*-*-</td></tr>
+                    <tr><td colspan="3" style="padding: 2px; text-align: center; font-size: 8px;"><b>Conservez ce ticket jusqu'à votre destination</b></td></tr>
+                    <tr><td colspan="3" style="padding: 2px; text-align: center; font-size: 8px;"><em>Le COSAMA vous remercie de votre confiance <br/> et vous souhaite un bon voyage</em></td></tr>
+                    </tbody>
+                </table>
+
+                </div>
+                    
+                </div>
+            
+                <!-- Bouton pour imprimer uniquement le ticket -->
+                </ng-template>            
+            
+            <ng-template pTemplate="footer">
+                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printTicket_()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="motifDialog" [style]="{width: '500px'}" 
+                header="Fournir obligatoirement le motif de l'annulation" 
+                [modal]="true" class="p-fluid">
+
+        <ng-template pTemplate="content">
+            <div class="p-formgrid grid">
+            <div class="field col">
+                <label for="motif">Motif</label>
+                <input type="text" pInputText [(ngModel)]="motif" autofocus/>
+                <small class="p-error" *ngIf="submitted && (!motif || motif.length < 5)">
+                Le motif doit contenir au moins 5 caractères.
+                </small>
+            </div>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <button pButton pRipple label="Ajouter" icon="pi pi-check" 
+                    class="p-button-text" 
+                    (click)="cancelFret()">
+            </button>
+        </ng-template>
+
+        </p-dialog>
+
+    </div>
+</div>
+
+

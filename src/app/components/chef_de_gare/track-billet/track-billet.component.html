@@ -1,0 +1,29 @@
+<div class="grid">
+    
+    <div class="col-12">
+        <p-toolbar styleClass="mb-4">
+            <ng-template pTemplate="left">
+                <div class="formgroup-inline">
+                        <div class="field">
+                            <input pInputText type="text" [(ngModel)]="bilCode" placeholder="Saisir le numéro de billet"  class="w-full sm:w-auto"/>
+                        </div>
+                        <button pButton pRipple label="Rechercher" icon="pi pi-search" class="p-button-primary mr-2" (click)="searchStateBillet()"></button>
+                </div>
+            </ng-template>
+
+        </p-toolbar>
+        <div class="card">
+            <p-timeline [value]="customEvents" align="alternate" styleClass="customized-timeline">
+                <ng-template pTemplate="marker" let-event>
+                <span class="custom-marker shadow-2" [style.backgroundColor]="event.color">
+                    <i [ngClass]="event.icon"></i>
+                </span>
+                </ng-template>
+                <ng-template pTemplate="content" let-event>
+                    <p-card [header]="event.status" [subheader]="event.bilTime">
+                    </p-card>
+                </ng-template>
+            </p-timeline>
+        </div>
+    </div>
+</div>

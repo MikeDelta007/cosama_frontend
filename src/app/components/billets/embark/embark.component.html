@@ -1,0 +1,85 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+			<h5>Embarquement des passagers</h5>
+			<div class="formgroup-inline">
+				<div class="field">
+					<input pInputText id="le_billet" [(ngModel)]="le_billet" type="text" placeholder="Fournir le n° de billet" (input)="onDropdownChange()" />
+				</div>
+				
+				<span [ngClass]="{
+                    'label-inexistant': bilResult === 'Billet inexistant',
+                    'label-inexistant2': bilResult === 'Billet pas encore contrôlé',
+                    'label-inexistant3': bilResult === 'Billet annulé',
+                    'label-non-achete': bilResult === 'Ce passager n\'est pas prévu pour ce voyage',
+                    'label-deja-embarque': bilResult === 'Passager est à bord'
+                }" style="font-size:15px">
+                <strong>
+                    {{ bilResult }}
+                </strong>
+            </span>
+            
+			</div>
+		</div>
+	</div>
+
+    <p-dialog [(visible)]="valideBillet" [style]="{width: '1250px'}" header="Fiche d'identification du billet" [modal]="true" class="p-fluid" >
+        <ng-template pTemplate="content">
+                <div class="grid">
+                    <div class="col-12">
+                        <button pButton pRipple iconPos="left" class="p-button-rounded p-button-success mr-2" (click)="saveCheckBillet(billet.bilId)">
+                            <i class="pi pi-arrow-down-right" style="margin-right: 8px;"></i>Cliquez pour effectuer le check-in du billet pour l'embarquement
+                        </button>   
+                    </div>
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <h5>Données du voyageur</h5>
+                            <div class="field">
+                                <span><strong>Numéro de billet : </strong>{{ billet.bilCode }}</span><br/>
+                                <span id=""><strong>Prénom (s) du voyageur : </strong>{{ billet.firstname }}</span><br/>
+                                <span id=""><strong>Nom du voyageur : </strong> {{ billet.lastname }}</span><br/>
+                                <span id=""><strong>Contact : </strong> {{ billet.phone }}</span><br/>
+                                <span id=""><strong>Identification Nationale : </strong> {{ billet.numeropiece }}</span>
+                            </div>
+                
+                        </div>
+                        
+                        <div class="card p-fluid">
+                            <h5>Informations du bébé</h5>
+                            <div class="field">
+                                    <span id=""><strong>Nom complet : </strong> {{ billet.enfantDTOS.enfNomComplet || "Aucun bébé" }}</span><br/>
+                                    <span id=""><strong>Age : </strong> {{ billet.enfantDTOS.enfAge + " " + billet.enfantDTOS.uniteTemps || "Pas d'age" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="col-12 md:col-6">
+                        <div class="card p-fluid">
+                            <h5>Informations de voyage</h5>
+                            <div class="field">
+                                    <span id=""><strong>Bateau : </strong>{{ getBateau(billet.voyageDTO.bat_id) }}</span><br/>
+                                    <span id=""><strong>Date de départ : </strong>{{ billet.voyageDTO.voy_datedpt }}</span><br/>
+                                    <span id=""><strong>Destination : </strong> {{ getVille(billet.voyageDTO.voy_destination) }}</span>
+                            </div>
+                        </div>
+                
+                        <div class="card p-fluid">
+                            <h5>Informations de tarification</h5>
+                            <div class="field">
+                                <span id=""><strong>Place : </strong> {{ getTypePlaceLabel(billet.typePlaceId) }} - {{ getPlaceLabel(billet.plcId) }}</span><br/>
+                                <span id=""><strong>Critères : </strong>
+                                    <span *ngFor="let critere of billet.critereIds; let i = index">
+                                        {{ critere.crt_nom }}<span *ngIf="i < billet.critereIds.length - 1"> </span>
+                                  </span>
+                                  </span><br/>
+                                <span id=""><strong>Prix TTC :</strong> {{ billet.bilPtt }}</span><br/>
+                                <span id=""><strong>Emission :</strong> {{ billet.bilDateEmission }} <strong> - Invalidité :</strong> {{ billet.bilDateValidite }}</span>
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+        </ng-template>
+
+    </p-dialog>
+</div>

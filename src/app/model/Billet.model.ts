@@ -1,0 +1,53 @@
+import { Enfant } from "./AchatOnLine.model";
+import { Critere } from "./Critere.model";
+import { Voyage } from "./Voyage.model";
+
+export class Billet {
+    constructor(
+    public bilId: number,
+    public bilCode: string,
+    public codeAchat: string,
+    public ipVente: string,
+    public firstname: string,
+    public lastname: string,
+    public phone:string,
+    public numeropiece: string,
+    public civilite: string,
+    public bilPht: number,
+    public bilPtt: number,
+    public bilTaxe: number,
+    public bilRemise: number,
+    public bilDateEmission: string,
+    public bilDateValidite: string,
+    public bilEtat: boolean,
+    public bilCheck: boolean,
+    public bilPrint: boolean,
+    public bilPenalite: number,
+    public bilReporter: number | null,
+    public noShow: number,
+    public dateNoShow: string | null,
+    public userModif: string,
+    public dateModif: string | null,
+    public userAnnule: string,
+    public dateAnnule: string | null,
+    public userEmbarq: string,
+    public dateEmbarq: string | null,
+    public userDebarque: string,
+    public dateDebarque: string | null,
+    public userRembours: string,
+    public dateRembours: string | null,
+    public mtnRembours: number,
+    public motifRembours: string,
+    public typePieceId: number,
+    public typePlaceId: number,
+    public clientEnCompteId: number,
+    public passagerId: number,
+    public voyageDTO: Voyage,
+    public batId: number,
+    public plcId: number,
+    public natId: number,
+    public critereIds: Critere[],
+    public enfantDTO: Enfant,
+
+) {}
+}

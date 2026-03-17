@@ -1,0 +1,382 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Ajouter une nouvelle facture" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        </div>
+                </ng-template>
+            </p-toolbar>
+            <p-tabView>
+              <p-tabPanel *ngFor="let cltFact of getFacturesGroupe" [header]="cltFact.raison_social">
+                <p-table #dt [value]="cltFact.factures" scrollable="true" scrollHeight="400px" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['fact_code', 'date_facturation', 'montant_facture', 'firstname', 'lastname', 'telephone']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                  <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Gestion de la facturation en compte</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                  </ng-template>
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Code Facture</th>
+                      <th>Date</th>
+                      <th>Montant HT Dû</th>
+                      <th>Client</th>
+                      <th>Téléphone</th>
+                      <th>Actions</th>
+                    </tr>
+                  </ng-template>
+            
+                  <ng-template pTemplate="body" let-facture>
+                    <tr [ngStyle]="{'background-color': facture.etat_facturation === true ? '#d4edda' : '#f8d7da'}">
+                      <td>{{ facture.fact_code }}</td>
+                      <td>{{ facture.date_facturation | date:'dd/MM/yyyy' }}</td>
+                      <td>{{ facture.montant_facture | currency:'XOF':'symbol':'1.0-0' }}</td>
+                      <td>{{ facture.firstname }} {{ facture.lastname }}</td>
+                      <td>{{ facture.telephone }}</td>
+                      <td>
+                        <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="editFacture(facture)">
+                          <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                        </button>  
+
+                        <button pButton pRipple iconPos="left" class="p-button-rounded p-button-danger mr-2" (click)="deleteFacture(facture)">
+                          <i class="pi pi-trash" style="margin-right: 8px;"></i>Supprimer
+                        </button>  
+
+                        <button pButton pRipple iconPos="left" class="p-button-rounded p-button-success mr-2">
+                          <i class="pi pi-print" style="margin-right: 8px;"></i>Imprimer
+                        </button>  
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </p-tabPanel>
+            </p-tabView>
+            
+            
+        </div>
+
+        <p-dialog [(visible)]="productDialog" [style]="{width: '1050px'}" header="Enregister une nouvelle facture" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="col-md-6">
+                    <!-- Raison sociale -->
+                    <div class="formgrid grid">
+                      <div class="field col-6">
+                        <label for="raisonSocial">Raison sociale</label>
+                        <p-dropdown id="modergltId" [(ngModel)]="facturationCreate.id_cltcmpt" [options]="clientEnComptes"
+                          optionLabel="raisonSocial" optionValue="cltcmptId" placeholder="Sélectionner un client en compte" (onChange)="onClientSelected($event.value)">
+                        </p-dropdown>
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.modergltId">Mode de règlement obligatoire</small>
+                      </div>
+                    </div>
+                  
+                    <!-- Prénom & Nom -->
+                    <div class="formgrid grid">
+                      <div class="field col-4">
+                        <label for="firstnameContact">Prénom(s) du contact</label>
+                        <input type="text" id="firstnameContact" [(ngModel)]="facturationCreate.firstname" name="firstnameContact" pInputText required
+                          [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.firstnameContact}" />
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.firstnameContact">Prénom(s) obligatoire</small>
+                      </div>
+                      <div class="field col-2">
+                        <label for="lastnameContact">Nom du contact</label>
+                        <input type="text" id="lastnameContact" [(ngModel)]="facturationCreate.lastname" name="lastnameContact" pInputText required
+                          [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.lastnameContact}" />
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.lastnameContact">Nom obligatoire</small>
+                      </div>
+                    </div>
+                  
+                    <!-- Téléphone & Email -->
+                    <div class="formgrid grid">
+                      <div class="field col-2">
+                        <label for="contact">Téléphone du contact</label>
+                        <input type="text" id="contact" [(ngModel)]="facturationCreate.telephone" name="contact" pInputText required
+                          [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.contact}" />
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.contact">Téléphone obligatoire</small>
+                      </div>
+                      <div class="field col-4">
+                        <label for="mail">Email du contact</label>
+                        <input type="text" id="mail" [(ngModel)]="facturationCreate.adresse" name="mail" pInputText required
+                          [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.mail}" />
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.mail">Email obligatoire</small>
+                      </div>
+                    </div>
+                  
+                    <!-- Comptes comptables -->
+                    <div class="formgrid grid">
+                      <div class="field col-6">
+                        <label for="cptgen_compta">Libellé</label>
+                        <input type="text" id="cptgen_compta" [(ngModel)]="facturationCreate.libelle" name="cptgen_compta" pInputText required
+                          [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.cptgen_compta}" />
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.cptgen_compta">Compte géné obligatoire</small>
+                      </div>
+                      <div class="field col-6">
+                        <label for="cpttiers_compta">Observations</label>
+                        <input type="text" id="cpttiers_compta" [(ngModel)]="facturationCreate.observation" name="cpttiers_compta" pInputText required
+                          [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.cpttiers_compta}" />
+                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.cpttiers_compta">Compte tiers obligatoire</small>
+                      </div>
+                    </div>
+                  
+                </div>
+
+                <div class="col-md-6">
+                    <div class="formgrid grid">
+                        <div class="field col-3">
+                            <label for="raisonSocial">Début</label>
+                            <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="startDate" [showIcon]="true" inputId="icon" appendTo="body">
+                            </p-calendar>
+                        </div>
+                        <div class="field col-3">
+                            <label for="raisonSocial">Fin</label>
+                            <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="endDate" [showIcon]="true" inputId="icon" appendTo="body">
+                            </p-calendar>
+                        </div>
+                        
+                        <div class="field col-3">
+                            <label for="raisonSocial">...</label>
+                            <button pButton pRipple label="Attacher les tickets frêt" icon="pi pi-paperclip" class="p-button-primary mr-2" (click)="getFretsForCltCpt()"></button>
+                        </div>
+                        <div class="field col-3">
+                          <label for="raisonSocial">...</label>
+                          <button pButton pRipple label="Ajouter des lignes" icon="pi pi-paperclip" class="p-button-secondary mr-2" (click)="openNew2()"></button>
+                      </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <p-table #dt [value]="ligneFactDetails" scrollable="true" scrollHeight="400px" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                               
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Actions</th>
+                                <th pSortableColumn="code">Description</th>
+                                <th pSortableColumn="inventoryStatus">Montant HT</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-lignefd>
+                            <tr>
+                                <td style="width:10%; min-width:10rem;">
+                                    <div class="flex">
+                                        <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="removeLineFact(lignefd.lignefct_id)"></button>
+                                    </div>
+                                </td>
+                                <td style="width:70%; min-width:10rem;">
+                                    <span class="p-column-title">Name</span>
+                                    {{lignefd.description_ligne}}
+                                </td>
+                                <td style="width:20%; min-width:8rem;">
+                                    <span class="p-column-title">Price</span>
+                                    {{lignefd.montant_ligne}}
+                                </td>                                      
+                            </tr>
+                        </ng-template>
+                    </p-table>
+
+                </div>
+                  
+            </ng-template>
+  
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveProduct()">
+                </button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog2" [style]="{width: '450px'}" header="Ajout d'une ligne de facturation" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="formgrid grid">
+                  <div class="field col">
+                    <label for="name">Description</label>
+                    <input type="text" [(ngModel)]="ligneFactCreate.description_ligne" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Numéro de piece obligatoire</small>
+                  </div>
+                </div>
+
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="status">Montant</label>
+                  <div class="p-inputgroup">
+                    <input type="text" [(ngModel)]="ligneFactCreate.montant_ligne" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  </div>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>   
+                </div>           
+              </div>               
+            </ng-template>
+  
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveLineFact()">
+                </button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="productDialog4" [style]="{width: '450px'}" header="Ajout d'une ligne de facturation pour modifier une facture" [modal]="true" class="p-fluid">
+          <ng-template pTemplate="content">
+              <div class="formgrid grid">
+                <div class="field col">
+                  <label for="name">Description</label>
+                  <input type="text" [(ngModel)]="ligneFactEdit.description_ligne" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                  <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Numéro de piece obligatoire</small>
+                </div>
+              </div>
+
+            <div class="formgrid grid">
+              <div class="field col">
+                <label for="status">Montant</label>
+                <div class="p-inputgroup">
+                  <input type="text" [(ngModel)]="ligneFactEdit.montant_ligne" pInputText required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !passager.numeropiece}"/>
+                </div>
+                <small class="ng-dirty ng-invalid" *ngIf="submitted && !passager.numeropiece">Place obligatoire</small>   
+              </div>           
+            </div>               
+          </ng-template>
+
+          <ng-template pTemplate="footer">
+              <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveLineFact_()">
+              </button>
+          </ng-template>
+      </p-dialog>
+
+        <p-dialog [(visible)]="productDialog3" [style]="{width: '1050px'}" header="Modifier une facture" [modal]="true" class="p-fluid">
+          <ng-template pTemplate="content">
+              <div class="col-md-6">
+                  <!-- Raison sociale -->
+                  <div class="formgrid grid">
+                    <div class="field col-6">
+                      <label for="raisonSocial">Raison sociale</label>
+                      <p-dropdown readonly id="modergltId" [(ngModel)]="facturationEdit.id_cltcmpt" [options]="clientEnComptes"
+                        optionLabel="raisonSocial" optionValue="cltcmptId" placeholder="Sélectionner un client en compte" (onChange)="onClientSelected($event.value)">
+                      </p-dropdown>
+                    </div>
+                  </div>
+                
+                  <!-- Prénom & Nom -->
+                  <div class="formgrid grid">
+                    <div class="field col-4">
+                      <label for="firstnameContact">Prénom(s) du contact</label>
+                      <input readonly type="text" id="firstnameContact" [(ngModel)]="facturationEdit.firstname" name="firstnameContact" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.firstnameContact}" />
+                      <small class="ng-dirty ng-invalid" *ngIf="submitted && !facturationCreate.firstnameContact">Prénom(s) obligatoire</small>
+                    </div>
+                    <div class="field col-2">
+                      <label for="lastnameContact">Nom du contact</label>
+                      <input readonly type="text" id="lastnameContact" [(ngModel)]="facturationEdit.lastname" name="lastnameContact" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.lastnameContact}" />
+                       </div>
+                  </div>
+                
+                  <!-- Téléphone & Email -->
+                  <div class="formgrid grid">
+                    <div class="field col-2">
+                      <label for="contact">Téléphone du contact</label>
+                      <input readonly type="text" id="contact" [(ngModel)]="facturationEdit.telephone" name="contact" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.contact}" />
+                      </div>
+                    <div class="field col-4">
+                      <label for="mail">Email du contact</label>
+                      <input readonly type="text" id="mail" [(ngModel)]="facturationEdit.adresse" name="mail" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.mail}" />
+                      </div>
+                  </div>
+                
+                  <!-- Comptes comptables -->
+                  <div class="formgrid grid">
+                    <div class="field col-6">
+                      <label for="cptgen_compta">Libellé</label>
+                      <input type="text" id="cptgen_compta" [(ngModel)]="facturationEdit.libelle" name="cptgen_compta" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.cptgen_compta}" />
+                      </div>
+                    <div class="field col-6">
+                      <label for="cpttiers_compta">Observations</label>
+                      <input type="text" id="cpttiers_compta" [(ngModel)]="facturationEdit.observation" name="cpttiers_compta" pInputText required
+                        [ngClass]="{'ng-invalid ng-dirty': submitted && !facturationCreate.cpttiers_compta}" />
+                      </div>
+                  </div>
+                
+              </div>
+
+              <div class="col-md-6">
+                  <div class="formgrid grid">
+                      <div class="field col-3">
+                          <label for="raisonSocial">Début</label>
+                          <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="startDate2" [showIcon]="true" inputId="icon" appendTo="body">
+                          </p-calendar>
+                      </div>
+                      <div class="field col-3">
+                          <label for="raisonSocial">Fin</label>
+                          <p-calendar dateFormat="dd/mm/yy" [(ngModel)]="endDate2" [showIcon]="true" inputId="icon" appendTo="body">
+                          </p-calendar>
+                      </div>
+                      
+                      <div class="field col-3">
+                          <label for="raisonSocial">...</label>
+                          <button pButton pRipple label="Attacher les tickets frêt" icon="pi pi-paperclip" class="p-button-primary mr-2" (click)="getFretsForCltCpt_()"></button>
+                      </div>
+                      <div class="field col-3">
+                        <label for="raisonSocial">...</label>
+                        <button pButton pRipple label="Ajouter des lignes" icon="pi pi-paperclip" class="p-button-secondary mr-2" (click)="openNew3()"></button>
+                    </div>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <p-table #dt [value]="ligneFactDetailsEdit" [columns]="cols" scrollable="true" scrollHeight="400px" responsiveLayout="scroll" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="ligneFactDetailsEdit" [rowHover]="true" dataKey="id">
+                             
+                      <ng-template pTemplate="header">
+                          <tr>
+                              <th>Actions</th>
+                              <th pSortableColumn="code">Description</th>
+                              <th pSortableColumn="inventoryStatus">Montant HT</th>
+                          </tr>
+                      </ng-template>
+                      <ng-template pTemplate="body" let-lignefd>
+                          <tr>
+                              <td style="width:10%; min-width:10rem;">
+                                  <div class="flex">
+                                      <button *ngIf="lignefd.fret_id !== 0" pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-success mr-2" (click)="removeLineFact_(lignefd.lignefct_id)"></button>
+                                      <button *ngIf="lignefd.fret_id === 0" pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-help mr-2" (click)="removeLineFact_(lignefd.lignefct_id)"></button>
+                                      <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger mr-2" (click)="removeLineFact_(lignefd.lignefct_id)"></button>
+                                  </div>
+                              </td>
+                              <td style="width:70%; min-width:10rem;">
+                                  <span class="p-column-title">Name</span>
+                                  {{lignefd.description_ligne}}
+                              </td>
+                              <td style="width:20%; min-width:8rem;">
+                                  <span class="p-column-title">Price</span>
+                                  {{lignefd.montant_ligne}}
+                              </td>                                      
+                          </tr>
+                      </ng-template>
+                  </p-table>
+
+              </div>
+                
+          </ng-template>
+
+          <ng-template pTemplate="footer">
+              <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveFacture()">
+              </button>
+              <button pButton pRipple label="Valider & Emettre" icon="pi pi-check" class="p-button-text" (click)="saveFacture_()">
+              </button>
+          </ng-template>
+      </p-dialog>
+
+        <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+    </div>
+</div>

@@ -1,0 +1,108 @@
+<div class="grid">
+  <div class="col-12 md:col-8 lg:col-6">
+    <p-toast></p-toast>
+    <div class="card">
+
+      <h5 class="mb-4">Gestion du profil</h5>
+
+      <div class="grid formgrid p-fluid">
+
+        <!-- Login -->
+        <div class="field col-4">
+          <label for="usr_login" class="font-semibold">Login</label>
+          <input
+            id="usr_login"
+            type="text"
+            pInputText
+            readonly
+            [(ngModel)]="userEdit.usr_login"
+            class="w-full"/>
+        </div>
+
+        <div class="field col-4">
+          <label for="usr_login" class="font-semibold">Profil</label><br>
+          <span>{{appMain.user?.profil?.prfl_libelle}}</span>
+        </div>
+
+        <div class="field col-4">
+          <label for="usr_login" class="font-semibold">Agence</label><br>
+          <span>{{appMain.user?.agence?.agcNom}}</span>
+        </div>
+
+
+        <!-- Ancien mot de passe -->
+        <div class="field col-12">
+          <label for="oldPassword" class="font-semibold">Ancien mot de passe</label>
+          <p-password
+            id="oldPassword"
+            [(ngModel)]="passwordForm.oldPassword"
+            name="oldPassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            inputStyleClass="w-full">
+          </p-password>
+        </div>
+
+        <!-- Nouveau mot de passe -->
+        <div class="field col-12 md:col-6">
+          <label for="newPassword" class="font-semibold">Nouveau mot de passe</label>
+          <p-password
+            id="newPassword"
+            [(ngModel)]="passwordForm.newPassword"
+            name="newPassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            inputStyleClass="w-full">
+          </p-password>
+        </div>
+
+        <!-- Confirmation mot de passe -->
+        <div class="field col-12 md:col-6">
+          <label for="confirmPassword" class="font-semibold">Confirmer le mot de passe</label>
+          <p-password
+            id="confirmPassword"
+            [(ngModel)]="passwordForm.confirmPassword"
+            name="confirmPassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            inputStyleClass="w-full">
+          </p-password>
+        </div>
+
+        <!-- Prénom -->
+        <div class="field col-12 md:col-6">
+          <label for="usr_firstname" class="font-semibold">Prénom(s)</label>
+          <input
+            id="usr_firstname"
+            type="text"
+            [(ngModel)]="userEdit.usr_firstname"
+            pInputText
+            class="w-full" />
+        </div>
+
+        <!-- Nom -->
+        <div class="field col-12 md:col-6">
+          <label for="usr_lastname" class="font-semibold">Nom</label>
+          <input
+            id="usr_lastname"
+            type="text"
+            [(ngModel)]="userEdit.usr_lastname"
+            pInputText
+            class="w-full" />
+        </div>
+      </div>
+
+      <!-- Boutons -->
+      <div class="flex justify-content-end gap-2 mt-4">
+        <button
+          pButton
+          pRipple
+          icon="pi pi-check"
+          label="Je confirme"
+          (click)="updateProfil(userEdit.usr_id)">
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

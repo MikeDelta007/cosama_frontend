@@ -1,0 +1,151 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between;">
+                <div class="col-8">
+                    <h5>Planning des voyages</h5>
+                    <full-calendar [options]="options"></full-calendar>
+                </div>
+                <div class="col-4">
+                    <h5>Légende</h5>
+                    <p-table #dt [value]="results" [rows]="10" styleClass="p-datatable-gridlines">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="code">Code couleur</th>
+                                <th pSortableColumn="name">Bateau</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-result>
+                            <tr>
+                                <td style="width:15%;" [ngStyle]="{ 'background-color': result.bat_markeur, 
+                                    'width': '30px', 'height': '30px', 'border-radius': '50%', 'display': 'inline-block'
+                                  }">
+                              </td>
+                                                              
+                                <td style="width:60%;">
+                                    {{result.bat_nom}}
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+
+            <p-dialog [(visible)]="productDialog" [style]="{width: '1250px', height: '1250px'}" header="Tracking de la place" class="p-fluid">
+              <ng-template pTemplate="content">
+                             
+                <div class="grid p-fluid text-left">
+                    <div class="col-12 md:col-4">
+                      <p-timeline [value]="customEvents" align="alternate" styleClass="customized-timeline">
+                        <ng-template pTemplate="marker" let-event>
+                        <span class="custom-marker shadow-2" [style.backgroundColor]="event.color">
+                            <i [ngClass]="event.icon"></i>
+                        </span>
+                        </ng-template>
+                        <ng-template pTemplate="content" let-event>
+                            <p-card [header]="event.status" [subheader]="event.bilTime">
+                            </p-card>
+                        </ng-template>
+                    </p-timeline>
+                    <!-- <p-button styleClass="p-button-danger mt-4">Liberer la place</p-button> -->
+                    </div>
+                    <div class="col-12 md:col-8">
+                              <div class="card">
+                                  <h5>Données du voyageur</h5>
+                                  <div class="field">
+                                      <span id="billetCode">Numéro de billet : {{ billet?.bilCode }}</span>
+                                  </div>
+                                  <div class="field">
+                                      <span id="billetCode">Prénom (s) du voyageur : {{ billet?.firstname }}</span>
+                                  </div>
+                                  <div class="field">
+                                      <span id="billetCode">Nom du voyageur : {{ billet?.lastname }}</span>
+                                  </div>
+                                  <div class="field">
+                                      <span id="billetCode">Contact : {{ billet?.phone }}</span>
+                                  </div>
+                                  <div class="field">
+                                      <span id="billetCode">Identification Nationale : {{ billet?.numeropiece }}</span>
+                                  </div>
+                      
+                              </div>
+                              
+                            <div class="card">
+                                <h5>Informations de tarification</h5>
+                                <div class="field">
+                                    <span id="billetCode">Place : {{ billet?.typePlaceId }} - {{ billet?.plcId }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Critères :
+                                        <span *ngFor="let critere of billet?.critereIds">
+                                        {{ critere.crt_nom }}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Prix TTC : {{ billet?.bilPtt }}</span>
+                                </div>
+                                <div class="field">
+                                    <span id="billetCode">Emission : {{ billet?.bilDateEmission }} - Invalidité : {{ billet?.bilDateValidite }}</span>
+                                </div>
+                  
+                            </div>
+                          </div>
+                        </div>
+              </ng-template>
+          </p-dialog>
+
+            
+            
+            <p-dialog [(visible)]="eventDialog" [style]="{width: '1500px'}" header="Etat des places pour le voyage" [modal]="true" position="top" class="">
+                <ng-template pTemplate="content">
+                  <div class="grid">
+                    <p-tabView>
+                        <div class="legend-container">
+                            <p-badge [value]="getBadgeNumber(1)" [severity]="getSeverity(1)" class="mr-2"></p-badge> Chaise
+                            <p-badge [value]="getBadgeNumber(2)" [severity]="getSeverity(2)" class="mr-2"></p-badge> Cabine à 2 places
+                            <p-badge [value]="getBadgeNumber(3)" [severity]="getSeverity(3)" class="mr-2"></p-badge> Cabine à 4 places
+                            <p-badge [value]="getBadgeNumber(4)" [severity]="getSeverity(4)" class="mr-2"></p-badge> Cabine à 8 places
+                            
+                            <div [ngClass]="['color-indicator', getColorClass('H')]" class="mr-1"></div> Place Homme
+                            <div [ngClass]="['color-indicator', getColorClass('F')]" class="mr-1"></div> Place Femme
+                            <div [ngClass]="['color-indicator', getColorClass('M')]" class="mr-1"></div> Place Mixte
+                            
+                            <div class="status-indicators">
+                                <div class="status-box libre">Libre</div>
+                                <div class="status-box occupe">Occupé</div>
+                                <div class="status-box reserve">Réservé</div>
+                                <div class="status-box checkin">Check-In</div>
+                                <div class="status-box abord">À bord</div>
+                            </div>
+                        </div>
+                        
+                      <br/>
+                      <p-tabPanel *ngFor="let section of sections" [header]="section.nivNom">
+                        <div class="place-buttons">
+                          <div class="button-row" *ngFor="let place of section.places; let i = index">
+                            <p-button (click)="getDetailsbillet(voyage, bateau, place.plcId)" [styleClass]="getButtonClass(place)">
+                              <div class="button-content">
+                                <p-badge [value]="getBadgeNumber(place.typePlace)" 
+                                [severity]="getSeverity(place.typePlace)" 
+                                styleClass="mr-2">
+                              </p-badge>
+                                <img [src]="getIcon(place.typePlace)" alt="{{place.plcCode}} icon" class="icon-svg"/>
+                                <span>{{ place.plcCode }}</span>
+                                    <div 
+                                      [ngClass]="['color-indicator', getColorClass(place.sexe), 'ml-2']">
+                                    </div>
+                              </div>
+                            </p-button>
+                          </div>
+                        </div>
+                        
+                      </p-tabPanel>
+                    </p-tabView>
+              
+                  </div>             
+                </ng-template>
+            </p-dialog>
+        </div>
+    </div>
+</div>

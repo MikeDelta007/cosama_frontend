@@ -1,0 +1,19 @@
+<div class="bar-wrapper">
+    <div class="bar-container">
+      <div
+        class="bar-fill"
+        [ngStyle]="{
+          width: value + '%',
+          backgroundColor: getBarColor(),
+          'border-top-right-radius': value >= 100 ? '15px' : '0',
+          'border-bottom-right-radius': value >= 100 ? '15px' : '0'
+        }">
+      </div>
+    </div>
+    <div class="bar-labels">
+      <span>0</span>
+      <span>50</span>
+      <span>100</span>
+    </div>
+  </div>
+  

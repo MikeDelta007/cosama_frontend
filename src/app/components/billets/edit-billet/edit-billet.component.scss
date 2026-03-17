@@ -1,0 +1,152 @@
+@media print {
+    /* Format pour un rouleau de 79,50 mm de largeur */
+    * {
+        font-family: 'Times New Roman', Times, serif !important;
+    }
+    body 
+    {
+        background: white;
+    }                   
+    #ticket-content {
+        /*width: 79.5mm; /* Largeur pour un rouleau de 79.50 mm */
+        width: 57.5mm; /*Largeur pour un rouleau de 57.50 mm */
+        font-size: 10px;
+        text-align: center;
+        position: absolute;
+        left: 0;
+        margin: 0px;
+        padding: 5px; /* Réduction du padding pour minimiser l'espace */
+        color: black; /* Couleur de texte */
+    }   
+
+    .titre_1 {
+        font-family:Verdana, Arial, Helvetica, sans-serif;
+        font-size:30px;
+        font-weight:bold;
+        text-align:left;
+    }
+
+       .titre_2 {
+        font-family:Verdana, Arial, Helvetica, sans-serif;
+        font-size:10px;
+        font-weight:bold;
+       }
+       
+       .titre_3 {
+        font-family:Verdana, Arial, Helvetica, sans-serif;
+        font-size:11px;
+        color:#666666;
+       }
+}
+
+.white-background {
+    background-color: white !important; /* Fond blanc pour les boutons */
+  }
+  
+  .red-button {
+    /* Style pour les boutons déjà réservés */
+    color: red;
+  }
+  
+  .lime-button {
+    /* Style pour les boutons disponibles */
+    color: lime;
+  }
+  
+  .button-content {
+    display: flex;
+    align-items: center;
+    position: relative; /* Nécessaire pour positionner le badge */
+  }
+  
+  .button-icon-badge {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .badge-class {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 5px;
+  }
+  
+  .button-text {
+    margin-left: 0px;
+  }
+
+
+  .icon-svg {
+    width: 1.5em; /* Ajustez la taille de l'icône SVG selon vos besoins */
+    height: 1.5em;
+    vertical-align: middle; /* Assurez un alignement vertical correct avec le texte du bouton */
+  }
+  
+  .button-content {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .button-text {
+    margin-left: 1em; /* Ajustez l'espacement entre l'icône et le texte */
+  }
+
+  .color-indicator {
+    width: 20px; /* Taille du cercle */
+    height: 20px; /* Taille du cercle */
+    border-radius: 50%; /* Rend le div arrondi */
+    display: inline-block; /* Affiche le div en ligne */
+    vertical-align: middle; /* Aligne verticalement le div */
+    margin-right: 8px; /* Espacement à droite */
+}
+
+.blue {
+    background-color:#007FFF; /* Bleu foncé */
+}
+
+.pink {
+    background-color: #FFC0CB; /* Rose */
+}
+
+.purple {
+    background-color: #800080; /* Violet */
+}
+
+.dark-pink 
+{
+    background-color: #E0115F;
+}
+
+.place-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  
+  button {
+    margin: 5px;
+  }
+
+
+.label-report
+{
+    border-radius: 5px; /* Pour arrondir les bords */
+    padding: 0.5rem 1rem; /* Espacement interne */
+    background-color: orange; /* Couleur verte pour succès */
+    color: black; /* Couleur du texte en blanc */
+    border: none; /* Suppression de la bordure */
+}
+
+.label-surclass
+{
+    border-radius: 5px; /* Pour arrondir les bords */
+    padding: 0.5rem 1rem; /* Espacement interne */
+    background-color: #28a745; /* Couleur verte pour succès */
+    color: white; /* Couleur du texte en blanc */
+    border: none; /* Suppression de la bordure */
+}

@@ -1,0 +1,976 @@
+<div class="col-12">
+    <div class="card">
+        <p-tabView orientation="left">
+            <p-tabPanel header="A payer" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange()" [(ngModel)]="selectedVoyage" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer les factures à payer" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="fretAPayers" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Frêt à payer</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° fret<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Expéditeur<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Destinataire<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">TTC<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Accompte<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Reliquat<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-fretAPayer>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{fretAPayer.fret_code}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Expéditeur</span>
+                                            {{fretAPayer.firstname}} {{fretAPayer.lastname}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Destinataire</span>
+                                            {{fretAPayer.firstname_dest}} {{fretAPayer.lastname_dest}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">TTC</span>
+                                            {{fretAPayer.fret_montant}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">TTC</span>
+                                            {{fretAPayer.fret_acompte}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">TTC</span>
+                                            {{fretAPayer.fret_montant - fretAPayer.fret_acompte}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                            <p-dialog [(visible)]="printDialog" [style]="{width: '1050px'}" header="Pré-print du frêt à payer" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Frêts à payer</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Frêt à payer {{selectedVoyage | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° fret</th>
+                                                <th>Expéditeur</th>
+                                                <th>Destinataire</th>
+                                                <th>TTC</th>
+                                                <th>Accompte</th>
+                                                <th>Reliquat</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of fretAPayers">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.firstname}} {{f.lastname}}</td>
+                                                <td>{{f.firstname_dest}} {{f.lastname_dest}}</td>
+                                                <td>{{f.fret_montant}}</td>
+                                                <td>{{f.fret_acompte}}</td>
+                                                <td>{{f.fret_montant - f.fret_acompte}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+
+                        </div>
+                        
+                                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Client en compte" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange2()" [(ngModel)]="selectedVoyage2" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer les fret pour client en compte" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew2()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="fretCltComptes" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Frêt pour Client en Compte</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° fret<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Client en compte<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Expéditeur<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Destinataire<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">TTC<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-fretCltCompte>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">N° de billet</span>
+                                            {{fretCltCompte.fret_code}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Expéditeur</span>
+                                            {{fretCltCompte.raison_social}}<br/>
+                                            {{fretCltCompte.contact}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Expéditeur</span>
+                                            {{fretCltCompte.raison_social}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">Destinataire</span>
+                                            {{fretCltCompte.firstname_dest}} {{fretCltCompte.lastname_dest}}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            <span class="p-column-title">TTC</span>
+                                            {{fretCltCompte.fret_montant}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                            
+                            <p-dialog [(visible)]="printDialog2" [style]="{width: '1050px'}" header="Pré-print etat client en compte" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Client en compte</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage2 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Frêt à payer {{selectedVoyage2 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage2 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° fret</th>
+                                                <th>Client en compte</th>
+                                                <th>Expéditeur</th>
+                                                <th>Destinataire</th>
+                                                <th>TTC</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of fretCltComptes">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.raison_social}}<br/>
+                                                    {{f.contact}}</td>
+                                                <td>{{f.raison_social}}</td>
+                                                <td>{{f.firstname_dest}} {{f.lastname_dest}}</td>
+                                                <td>{{f.fret_montant}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+
+                        </div>
+                                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Manifeste" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange3()" [(ngModel)]="selectedVoyage3" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste frêt" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew3()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="manifestes" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Manifeste frêt</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° fret<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Expéditeur<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Produit<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Détails<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Quantité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Poids<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Volume<p-sortIcon field="crt_nom"></p-sortIcon></th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-manifeste>
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{manifeste.fret_code}}
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{manifeste.firstname}} {{manifeste.lastname}}
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{manifeste.tbg_nom}}
+                                        </td>
+                                        <td style="width:20%; min-width:10rem;">
+                                            {{manifeste.details}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{manifeste.quantity}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{manifeste.weight}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{manifeste.volume}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                            <p-dialog [(visible)]="printDialog3" [style]="{width: '1050px'}" header="Pré-print etat client en compte" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Manifeste frêt</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage3 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Manifeste frêt {{selectedVoyage3 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage3 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° fret</th>
+                                                <th>Expéditeur</th>
+                                                <th>Produit</th>
+                                                <th>Détails</th>
+                                                <th>Quantité</th>
+                                                <th>Poids</th>
+                                                <th>Volume</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of manifestes">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.firstname}} {{f.lastname}}</td>
+                                                <td>{{f.tbg_nom}}</td>
+                                                <td>{{f.details}}</td>
+                                                <td>{{f.quantity}}</td>
+                                                <td>{{f.weight}}</td>
+                                                <td>{{f.volume}}</td>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+                        </div>
+                                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Annulation" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange4()" [(ngModel)]="selectedVoyage4" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste frêt" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew4()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="annulations" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Annulation</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° Fret<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Marchandises<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Poids (KG)<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Quantité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">PU<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Montant<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Peseur<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Date<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Caissier<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Observation<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                    </tr>                                 
+                                </ng-template>
+                                <ng-template pTemplate="body" let-annulation>
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{annulation.fret_code}}
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{annulation.tbg_nom}}<br/>
+                                            ({{annulation.details}})
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.quantity}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.weight}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.volume}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.fret_montant_ht}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.usr_login}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.fret_date | date:'dd/MM/yyyy HH:mm'}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{annulation.fret_pay_usr}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            To fill
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                            <p-dialog [(visible)]="printDialog4" [style]="{width: '1050px'}" header="Pré-print etat client en compte" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Rapport d'annulation du frêt</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage4 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Annulations frêt {{selectedVoyage4 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage4 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° Fret</th>
+                                                <th>Marchandises</th>
+                                                <th>Poids (KG)</th>
+                                                <th>Quantité</th>
+                                                <th>PU</th>
+                                                <th>Montant</th>
+                                                <th>Peseur</th>
+                                                <th>Date</th>
+                                                <th>Caissier</th>
+                                            
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of annulations">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.tbg_nom}}<br/>
+                                                    ({{f.details}})</td>
+                                                <td>{{f.quantity}}</td>
+                                                <td>{{f.weight}}</td>
+                                                <td>{{f.volume}}</td>
+                                                <td>{{f.fret_montant_ht}}</td>
+                                                <td>{{f.usr_login}}</td>
+                                                <td>{{f.fret_date | date:'dd/MM/yyyy HH:mm'}}</td>
+                                                <td>{{f.fret_pay_usr}}</td>
+                                    </tr>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+                        </div>
+                                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="En attente" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange5()" [(ngModel)]="selectedVoyage5" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste frêt" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="enAttentes" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Frêt en attente</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° Fret<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Marchandises<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Poids (KG)<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Quantité<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Volume<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">PU<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Montant<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                    </tr>                                 
+                                </ng-template>
+                                <ng-template pTemplate="body" let-enAttente>
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{enAttente.fret_code}}
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{enAttente.tbg_nom}}<br/>
+                                            ({{enAttente.details}})
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{enAttente.quantity}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{enAttente.weight}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{enAttente.volume}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            0
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            0
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                            <p-dialog [(visible)]="printDialog5" [style]="{width: '1050px'}" header="Pré-print etat client en compte" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Frêt en attente</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage5 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Frêts en attente {{selectedVoyage5 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage5 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° Fret</th>
+                                                <th>Marchandises</th>
+                                                <th>Poids (KG)</th>
+                                                <th>Quantité</th>
+                                                <th>Volume</th>
+                                                <th>PU</th>
+                                                <th>Montant</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of enAttentes">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.tbg_nom}}<br/>
+                                                    ({{f.details}})</td>
+                                                <td>{{f.quantity}}</td>
+                                                <td>{{f.weight}}</td>
+                                                <td>{{f.volume}}</td>
+                                                <td>{{f.fret_montant_ht}}</td>
+                                                <td>{{f.usr_login}}</td>
+                                                <td>{{f.fret_date | date:'dd/MM/yyyy HH:mm'}}</td>
+                                                <td>{{f.fret_pay_usr}}</td>
+                                    </tr>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+                        </div>
+                                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+
+            <p-tabPanel header="Rapport" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange6()" [(ngModel)]="selectedVoyage6" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le rapport du frêt" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew6()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="rapports" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Rapport du frêt</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>N° Fret</th>
+                                        <th>Produit</th>
+                                        <th>Poids (KG)</th>
+                                        <th>Quantité</th>
+                                        <th>Volume</th>
+                                        <th>PU</th>
+                                        <th>Montant</th>
+                                    </tr>                                 
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rapport>
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{rapport.fret_code}}
+                                        </td>
+                                        <td style="width:25%; min-width:10rem;">
+                                            {{rapport.tbg_nom}}<br/>
+                                            ({{rapport.details}})
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{rapport.quantity}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{rapport.weight}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{rapport.volume}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{rapport.fret_montant_ht}}
+                                        </td>
+                                        <td style="width:5%; min-width:10rem;">
+                                            {{rapport.fret_montant}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                                       
+                    </div>
+                    <p-dialog [(visible)]="printDialog6" [style]="{width: '1050px'}" header="Pré-print etat client en compte" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Rapport du frêt</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage6 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Rapport frêt {{selectedVoyage6 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage6 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° Fret</th>
+                                                <th>Produit</th>
+                                                <th>Poids (KG)</th>
+                                                <th>Quantité</th>
+                                                <th>Volume</th>
+                                                <th>PU</th>
+                                                <th>Montant</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of rapports">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.tbg_nom}}<br/>
+                                                    ({{f.details}})</td>
+                                                <td>{{f.quantity}}</td>
+                                                <td>{{f.weight}}</td>
+                                                <td>{{f.volume}}</td>
+                                                <td>{{f.fret_montant_ht}}</td>
+                                                <td>{{f.fret_montant / 1.18}}</td>
+                                               
+                                    </tr>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+                </div>
+                
+            </p-tabPanel>
+           
+            <p-tabPanel header="TVA" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">    
+                                <div style="display: inline-block; width: 300px;">
+                                    <label for="voyage" style="display: block; margin-bottom: 5px;">Selectionnez un voyage :</label>
+                                    <p-dropdown class="fixed-dropdown" (onChange)="onDropdownChange7()" [(ngModel)]="selectedVoyage7" optionLabel="code_voyage" optionValue="voy_id" [options]="voyages" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-voyage pTemplate="item">
+                                            <span>{{ voyage.voy_id | infovoyage2: voyages }}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                        
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Générer le manifeste frêt" icon="pi pi-print" class="p-button-success mr-2" (click)="openNew7()"></button>
+                                        </div>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="tvas" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">TVA Frêt</h5>
+                                        <!-- <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                                        </span> -->
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">N° Fret<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Expéditeur<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Destinataire<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Montant HT<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">TVA<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="crt_nom">Montant TTC<p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                    </tr>                                 
+                                </ng-template>
+                                <ng-template pTemplate="body" let-tva>
+                                    <tr>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{tva.fret_code}}
+                                        </td>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{tva.firstname}} {{tva.lastname}}
+                                        </td>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{tva.firstname_dest}} {{tva.lastname_dest}}
+                                        </td>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{tva.fret_montant_ht}}
+                                        </td>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{tva.fret_tva}}
+                                        </td>
+                                        <td style="width:10%; min-width:10rem;">
+                                            {{tva.fret_montant}}
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+
+                            <p-dialog [(visible)]="printDialog7" [style]="{width: '1050px'}" header="Pré-print etat client en compte" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="left">
+                                <div id="ticket-content">
+                                    <div class="header">
+                                        <img [src]="'assets/layout/images/cosama.jpg'" alt="Logo COSAMA">
+                                        <h2>Rapport TVA du frêt</h2>
+                                         <p style="text-align: right;">Ligne : {{selectedVoyage7 | infovoyage5: voyages : villes}}</p>
+                                        </div>
+                                    <p style="text-align: center;"><b>Rapport frêt {{selectedVoyage7 | infovoyage3: voyages : bateaux}}</b></p>
+                                    <p style="text-align: right;">Numéro de voyage : {{selectedVoyage7 | infovoyage4 : voyages : villes}}</p>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>N° Fret</th>
+                                                <th>Expéditeur</th>
+                                                <th>Destinataire</th>
+                                                <th>Montant HT</th>
+                                                <th>TVA</th>
+                                                <th>Montant TTC</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody *ngFor="let f of tvas">
+                                            <tr>
+                                                <td>{{f.fret_code}}</td>
+                                                <td>{{f.firstname}} {{f.lastname}}</td>
+                                                <td>{{f.firstname_dest}} {{f.lastname_dest}}</td>
+                                                <td>{{f.fret_montant_ht}}</td>
+                                                <td>{{f.fret_montant / 1.18}}</td>
+                                                <td>{{f.fret_montant }}</td>
+                                    </tr>
+                                    </table>
+                                    <!-- <table style="width: 100%; text-align: center;">
+                                        <tr>
+                                            <th>Récapitulatif</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Passagers: 5</td>
+                                        </tr>
+                                    </table> -->
+                                    <div class="footer">
+                                            <tr>Page : <span class="pageNumber"></span> - Edité le : <span class="currentDate"></span></tr><br/>
+                                            <tr>COSAMA - Manifeste Passagers</tr><br/>
+                                            <tr><td>2, rue Joris - BP.:4136 Dakar</td>
+                                            <td style="text-align: right; padding-right: 20px;">
+                                            </td>		
+                                            </tr><br/>
+                                            <tr>Tel: 33 821 29 00 ou 33 991 72 00 / Fax: 33 821 29 01 ou 33 991 72 01 - E-mail: cosama&#64;cosamasn.com</tr><br/>
+                                    </div> 
+                                </div>
+                            
+                                <!-- Bouton pour imprimer uniquement le ticket -->
+                                </ng-template>            
+                            
+                            <ng-template pTemplate="footer">
+                                <button pButton type="button" label="Imprimer" icon="pi pi-print" (click)="printManifeste()"></button>
+                            </ng-template>
+                            </p-dialog>
+                        </div>
+                                       
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+           
+        </p-tabView>
+    </div>
+</div>

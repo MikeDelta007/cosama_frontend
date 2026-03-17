@@ -1,0 +1,149 @@
+<div class="layout-dashboard">
+    <div class="grid">
+           
+        <div class="col-12 lg:col-6">
+            <div class="card sale-graph">
+                <div class="card-header">
+                    <h6>Situation des clients en compte</h6>
+                </div>
+                <div id="order-tabs-container" class="order-tabs">
+                    <div class="formgrid grid align-items-end">
+                      
+                      <!-- Client en compte -->
+                      <div class="field col-12 md:col-4">
+                        <label for="clientDropdown">Client</label>
+                        <p-dropdown
+                          id="clientDropdown"
+                          [options]="clientEnComptes"
+                          optionLabel="raisonSocial"
+                          optionValue="cltcmptId"
+                          placeholder="Sélectionnez un client en compte"
+                          (onChange)="onClientSelect($event)"
+                          styleClass="w-full">
+                        </p-dropdown>
+                      </div>
+                  
+                      <!-- Année -->
+                      <div class="field col-12 md:col-4">
+                        <label for="yearCalendar">Année</label>
+                        <p-calendar
+                          id="yearCalendar"
+                          view="year"
+                          yearNavigator="true"
+                          [yearRange]="'2000:9999'"
+                          dateFormat="yy"
+                          placeholder="Sélectionner une année"
+                          (onSelect)="onYearSelect($event)"
+                          styleClass="w-full">
+                        </p-calendar>
+                      </div>
+                  
+                      <!-- Bouton -->
+                      <div class="field col-12 md:col-3">
+                        <label>&nbsp;</label> <!-- Trick pour aligner verticalement -->
+                        <button
+                          pButton
+                          pRipple
+                          type="button"
+                          label="Visualiser"
+                          icon="pi pi-play"
+                          class="p-button-success w-full"
+                          (click)="getTracer()">
+                        </button>
+                      </div>
+                  
+                    </div>
+                  </div>                  
+                  
+                <div class="overview-chart">
+                    <p-chart #orders type="line" [data]="ordersChart" [options]="ordersOptions" [responsive]="true"></p-chart>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-6">
+          <div class="card">
+            <div class="card-header">
+              <h6>Consulter l'état du client selon une périodicité</h6>
+            </div>
+            <div class="formgrid grid align-items-end">
+  
+              <!-- Période du -->
+              <div class="field col-12 md:col-4">
+                <label for="startDate">Période du : </label><br/>
+                <p-calendar
+                  dateFormat="dd/mm/yy"
+                  placeholder="Sélectionner une date"
+                  [(ngModel)]="startDate"
+                  [showIcon]="true"
+                  inputId="icon"
+                  appendTo="body">
+                </p-calendar>
+              </div>
+            
+              <!-- Période à -->
+              <div class="field col-12 md:col-4">
+                <label for="endDate">Au : </label><br/>
+                <p-calendar
+                  dateFormat="dd/mm/yy"
+                  placeholder="Sélectionner une date"
+                  [(ngModel)]="endDate"
+                  [showIcon]="true"
+                  inputId="icon"
+                  appendTo="body">
+                </p-calendar>
+              </div>
+            
+              <!-- Bouton de consultation -->
+              <div class="field col-12 md:col-4">
+                <label>&nbsp;</label> <!-- Espace pour aligner le bouton verticalement -->
+                <button
+                  pButton
+                  pRipple
+                  type="button"
+                  label="Consulter"
+                  icon="pi pi-search"
+                  class="p-button-success w-full"
+                  (click)="getConsultation()">
+                </button>
+              </div>
+            
+            </div>
+            
+
+            <p-table #dt [value]="factures" scrollable="true" scrollHeight="400px" responsiveLayout="scroll" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [rowHover]="true" dataKey="id">
+                             
+              <ng-template pTemplate="header">
+                  <tr>
+                      <th>N° Facture</th>
+                      <th>Date facturation</th>
+                      <th>Montant TTC</th>
+                      <th>Etat de facturation</th>
+                  </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-fact>
+                  <tr>
+                      <td style="width:10%; min-width:10rem;">
+                          <span class="p-column-title">Name</span>
+                          {{fact.fact_code}}
+                      </td>
+                      <td style="width:20%; min-width:8rem;">
+                          <span class="p-column-title">Price</span>
+                          {{fact.date_facturation}}
+                      </td>  
+                      <td style="width:30%; min-width:8rem;">
+                        <span class="p-column-title">Price</span>
+                        {{fact.montant_facture + fact.tva_facture}}
+                    </td> 
+                    <td style="width:40%; min-width:8rem;">
+                      <span class="p-column-title">Price</span>
+                      {{ fact.etat_facturation }} (date échéance {{ fact.date_echeance }})
+                  </td>                                      
+                  </tr>
+              </ng-template>
+          </p-table>
+
+          </div>
+        </div>
+    </div>
+</div>

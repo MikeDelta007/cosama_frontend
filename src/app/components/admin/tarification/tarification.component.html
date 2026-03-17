@@ -1,0 +1,642 @@
+<div class="col-12">
+    <div class="card">
+        <p-tabView orientation="left">
+            <p-tabPanel header="Critères" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter Critère" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                                        </div>
+                                </ng-template>
+                
+                                <ng-template pTemplate="right">
+                                    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+                                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help" (click)="dt.exportCSV()"></button>
+                                </ng-template>
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="criteres" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['crt_nom']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des critères</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="crt_nom">Critères <p-sortIcon field="crt_nom"></p-sortIcon></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-critere>
+                                    <tr>
+                                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Critères</span>
+                                            {{critere.crt_nom}}
+                                        </td>
+                                        
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="editCritere(critere)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>   
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2" (click)="deleteCritere(critere)">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                                </button> 
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Ajouter un nouveau critère" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Nom du critère</label>
+                                    <input type="text" pInputText id="crtNom" [(ngModel)]="critereCreate.crtNom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !crtNom">Name is required.</small>
+                                </div>
+                                
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveCritere()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="editDialog" [style]="{width: '450px'}" header="Modifier le critère" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Nom du critère</label>
+                                    <input type="text" pInputText id="crtNom" [(ngModel)]="critere.crt_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !crtNom">Name is required.</small>
+                                </div>
+                                
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveCritere2()"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteCritereDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="product">Voulez vous supprimer le critère <b>{{critere.crt_nom}}</b> ?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Non" (click)="deleteProductDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Oui" (click)="confirmDelete()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+            <p-tabPanel header="Tarifs passagers" class="line-height-3 m-0">
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter un tarif place" icon="pi pi-plus" class="p-button-success mr-2" (click)="openTarifsPas()"></button>
+                                        </div>
+                                </ng-template>
+                
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="places" [columns]="cols2" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['cat_nom']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion de la tarification des passages</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="cat_nom">Ligne tarif<p-sortIcon field="cat_nom"></p-sortIcon></th>
+                                        <th pSortableColumn="typePlace">Type de place<p-sortIcon field="typePlace"></p-sortIcon></th>
+                                        <th pSortableColumn="criteres">Critères<p-sortIcon field="criteres"></p-sortIcon></th>
+                                        <th pSortableColumn="catPrixTtc">Prix TTC<p-sortIcon field="catPrixTtc"></p-sortIcon></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-place>
+                                    <tr>
+                                        <td style="width:20%; min-width:10rem;">
+                                            {{place.cat_nom || 'Pas de données' }}
+                                        </td>
+                                        <td style="width:14%; min-width:10rem;">
+                                            {{ place.typePlace?.tplcNom || 'Pas de données' }}
+                                          </td>                                          
+                                        <td style="width:30%; min-width:8rem;">
+                                           
+                                                <span *ngFor="let critere of place.criteres" style="display: inline-block; margin-right: 3px; margin-bottom: 3px;">
+                                                    <p-tag icon="pi pi-info-circle" severity="info" value="{{critere.crt_nom || getCritereById(critere)}}" />
+                                                </span>
+                                     
+                                        </td>                                          
+                                        <td style="width:14%; min-width:10rem;">
+                                            {{place.cat_prix_ttc | customCurrency}}
+                                        </td>
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifTarifsPlace(place)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>   
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2" (click)="deleteCritere(critere)">
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                                </button> 
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="tarifPasDialog" [style]="{width: '650px'}" header="Créer une tarification des places" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Intitulé ligne tarif</label>
+                                    <input type="text" pInputText id="catNom" [(ngModel)]="categorieCreate.catNom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !catNom">Name is required.</small>
+                                </div>
+                                <div class="field">
+                                    <label for="status">Type de place</label>
+                                    <p-dropdown [(ngModel)]="categorieCreate.tplcId" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-typePlace pTemplate="item">
+                                            <span>{{typePlace.tplc_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div class="formgrid grid">
+                                    <div class="field col">
+                                        <label for="name">Prix de la place</label>
+                                        <input type="text" pInputText id="catPrixTtc" [(ngModel)]="categorieCreate.catPrix" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !catPrixTtc">Name is required.</small>
+                                    </div>
+                                    <div class="field col">
+                                        <label for="name">Autres Taxes (Différentes de la TVA)</label>
+                                        <input type="text" inputId="catTaxe" pInputText [(ngModel)]="categorieCreate.catTaxe"/>
+                                    </div>    
+                                </div>
+                                <div class="field">
+                                    <label for="name">Taux de remise en %</label>
+                                    <p-inputNumber inputId="catRemise" suffix="%" mode="decimal" [(ngModel)]="categorieCreate.tauxRemise" [showButtons]="true" [min]="0" [max]="100">
+                                    </p-inputNumber>
+                                </div>    
+                                
+                                <div class="">
+                                    <p-pickList [source]="criteres" [target]="targetCriteria" sourceHeader="Critères" targetHeader="Choix" dragdrop="true"
+                                                [responsive]="true" [sourceStyle]="{'height':'150px'}" [targetStyle]="{'height':'150px'}">
+                                        <ng-template let-critere pTemplate="item">
+                                            <div>{{critere.crt_nom}}</div>
+                                        </ng-template>
+                                    </p-pickList>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveTarifPlace()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="tarifPasEdit" [style]="{width: '650px'}" header="Modifier une tarification des places" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Intitulé ligne tarif</label>
+                                    <input type="text" pInputText id="catNom" [(ngModel)]="tarifPlacesEdit.cat_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !catNom">Name is required.</small>
+                                </div>
+                                <div class="field">
+                                    <label for="status">Type de place :</label>
+                                    <p-dropdown [(ngModel)]="tarifPlacesEdit.tplc_id" optionValue="tplc_id" optionLabel="tplc_nom" [options]="typePlaces" placeholder="Choisir..." appendTo="body">
+                                        <ng-template let-typePlace pTemplate="item">
+                                            <span>{{typePlace.tplc_nom}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div class="formgrid grid">
+                                    <div class="field col">
+                                        <label for="name">Prix de la place</label>
+                                        <input type="text" pInputText id="catPrixTtc" [(ngModel)]="tarifPlacesEdit.cat_prix" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !catPrixTtc">Name is required.</small>
+                                    </div>
+                                    <div class="field col">
+                                        <label for="name">Autres Taxes (Différentes de la TVA)</label>
+                                        <input type="text" pInputText [(ngModel)]="tarifPlacesEdit.cat_taxe"/>
+                                    </div>    
+                                </div>
+                                <div class="field">
+                                    <label for="name">Taux de remise en %</label>
+                                    <p-inputNumber inputId="catRemise" suffix="%" mode="decimal" [(ngModel)]="tarifPlacesEdit.taux_remise" [showButtons]="true" [min]="0" [max]="100">
+                                    </p-inputNumber>
+                                </div>
+
+                                <div class="">
+                                    <p-pickList [source]="criteriaForEdit" [target]="targetCriteriaPlaces" sourceHeader="Critères" targetHeader="Choix" dragdrop="true"
+                                                [responsive]="true" [sourceStyle]="{'height':'150px'}" [targetStyle]="{'height':'150px'}">
+                                        <ng-template let-critere pTemplate="item">
+                                            <div>{{critere.crt_nom}}</div>
+                                        </ng-template>
+                                    </p-pickList>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveTarifPlace2(tarifPlacesEdit.cat_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        
+                
+                        <p-dialog [(visible)]="deleteCriteresDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+                </div>
+                
+            </p-tabPanel>
+            <p-tabPanel header="Tarifs bagages" class="line-height-3 m-0">                
+                <div class="grid">
+                <div class="col-12">
+                    <div class="">
+                        <p-toast></p-toast>
+                        <p-toolbar styleClass="mb-4">
+                            <ng-template pTemplate="left">
+                                <div class="my-2">
+                                    <button pButton pRipple label="Ajouter un tarif bagage" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNewTarifBagage()"></button>
+                                    </div>
+                            </ng-template>
+                        </p-toolbar>
+            
+                        <p-table #dt [value]="bagages" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['cat_nom','tbg_nom','cat_prix_ttc']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                            <ng-template pTemplate="caption">   
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Gestion de la tarification des bagages</h5>
+                                    <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="cat_nom">Ligne tarif <p-sortIcon field="cat_nom"></p-sortIcon></th>
+                                    <th>Type de bagage</th>
+                                    <th>Critères</th>
+                                    <th>Prix TTC</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-bagage>
+                                <tr>
+                                    <td style="width:25%; min-width:10rem;">
+                                        {{bagage.cat_nom || 'Pas de données' }}
+                                    </td>
+                                    <td style="width:25%; min-width:10rem;">
+                                        {{ bagage.typeBagage?.tbg_nom || 'Aucun Bagage' }}<br/>
+                                        ({{ bagage.typeBagage?.unite.unite_code || 'Aucune Unité' }})
+                                      </td>                                          
+                                    <td style="width:30%; min-width:8rem;">
+                                       
+                                            <span *ngFor="let critere of bagage.criteres" style="display: inline-block; margin-right: 3px; margin-bottom: 3px;">
+                                                <p-tag icon="pi pi-info-circle" severity="info" value="{{critere.crt_nom || getCritereById(critere)}}" />
+                                            </span>
+                                 
+                                    </td>                                          
+                                    <td style="width:14%; min-width:10rem;">
+                                        {{bagage.cat_prix_ttc | customCurrency}}
+                                    </td>
+                                    <td>
+                                        <div class="flex">
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifTarifsBagage(bagage)">
+                                                <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                            </button>   
+                                            <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2" (click)="deleteCritere(critere)">
+                                                <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                            </button> 
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+            
+                                    
+                    <p-dialog [(visible)]="tarifBgDialog" [style]="{width: '650px'}" header="Créer une tarification des bagages" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé ligne tarif</label>
+                                <input type="text" pInputText id="catNom" [(ngModel)]="categorieCreate.catNom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !catNom">Name is required.</small>
+                            </div>
+                            <div class="field">
+                                <label for="status">Type de bagage</label>
+                                <p-dropdown [(ngModel)]="categorieCreate.typeBagage" optionValue="tbg_id" optionLabel="tbg_nom" [options]="typeBagages" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-typeBagage pTemplate="item">
+                                        <span>{{typeBagage.tbg_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="field">
+                                <label class="mb-3">Est-ce une voiture ?</label>
+                                <div class="formgrid grid">
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton id="V" name="V" value="V" [(ngModel)]="categorieCreate.code"></p-radioButton>
+                                        <label for="Oui">Oui</label>
+                                    </div>
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton id="NV" name="NV" value="NV" [(ngModel)]="categorieCreate.code"></p-radioButton>
+                                        <label for="Non">Non</label>
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                            <div class="formgrid grid">
+                                    <div class="field col">
+                                        <label for="name">Prix du bagage</label>
+                                        <input type="text" pInputText id="catPrixTtc" [(ngModel)]="categorieCreate.catPrix" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !catPrixTtc">Name is required.</small>
+                                    </div>
+                                    <div class="field col">
+                                        <label for="name">Frais de magasinage</label>
+                                        <input type="text" pInputText id="catPrixTtc" [(ngModel)]="categorieCreate.fraisMag" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                        <small class="ng-dirty ng-invalid" *ngIf="submitted && !catPrixTtc">Name is required.</small>
+                                    </div>
+                                </div>
+                            <div class="field">
+                                <label for="name">Remise en %</label>
+                                <p-inputNumber inputId="catRemise" suffix="%" mode="decimal" [(ngModel)]="categorieCreate.tauxRemise" [showButtons]="true" [min]="0" [max]="100">
+                                </p-inputNumber>
+                            </div>
+                            <div class="">
+                                <p-pickList [source]="criteres" [target]="targetCriteria" sourceHeader="Critères" targetHeader="Choix" dragdrop="true"
+                                            [responsive]="true" [sourceStyle]="{'height':'150px'}" [targetStyle]="{'height':'150px'}">
+                                    <ng-template let-critere pTemplate="item">
+                                        <div>{{critere.crt_nom}}</div>
+                                    </ng-template>
+                                </p-pickList>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveTarifBagage()"></button>
+                        </ng-template>
+                    </p-dialog>
+
+                    <p-dialog [(visible)]="tarifBgEdit" [style]="{width: '650px'}" header="Modifier une tarification des bagages" [modal]="true" class="p-fluid">
+                        <ng-template pTemplate="content">
+                            <div class="field">
+                                <label for="name">Intitulé ligne tarif</label>
+                                <input type="text" pInputText id="catNom" [(ngModel)]="tarifBagagesEdit.cat_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !catNom">Name is required.</small>
+                            </div>
+                            <div class="field">
+                                <label for="status">Type de bagage</label>
+                                <p-dropdown [(ngModel)]="tarifBagagesEdit.tbg_id" optionValue="tbg_id" optionLabel="tbg_nom" [options]="typeBagages" placeholder="Choisir..." appendTo="body">
+                                    <ng-template let-typeBagage pTemplate="item">
+                                        <span>{{typeBagage.tbg_nom}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="field">
+                                <label class="mb-3">Est-ce une voiture ?</label>
+                                <div class="formgrid grid">
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton id="V" name="V" value="V" [(ngModel)]="tarifBagagesEdit.code"></p-radioButton>
+                                        <label for="Oui">Oui</label>
+                                    </div>
+                                    <div class="field-radiobutton col-6">
+                                        <p-radioButton id="NV" name="NV" value="NV" [(ngModel)]="tarifBagagesEdit.code"></p-radioButton>
+                                        <label for="Non">Non</label>
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                            <div class="formgrid grid">
+                                <div class="field col">
+                                    <label for="name">Prix HT du bagage</label>
+                                    <input type="text" pInputText [(ngModel)]="tarifBagagesEdit.cat_prix" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !catPrixTtc">Name is required.</small>
+                                </div>
+                                <div class="field col">
+                                    <label for="name">Frais de magasinage</label>
+                                    <input type="text" pInputText [(ngModel)]="tarifBagagesEdit.frais_mag" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !catPrixTtc">Name is required.</small>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="name">Taux de remise en %</label>
+                                <p-inputNumber inputId="catRemise" suffix="%" mode="decimal" [(ngModel)]="tarifBagagesEdit.taux_remise" [showButtons]="true" [min]="0" [max]="100">
+                                </p-inputNumber>
+                            </div>
+
+                            <div class="">
+                                <p-pickList [source]="criteriaForEdit2" [target]="targetCriteriaBagages" sourceHeader="Critères" targetHeader="Choix" dragdrop="true"
+                                            [responsive]="true" [sourceStyle]="{'height':'150px'}" [targetStyle]="{'height':'150px'}">
+                                    <ng-template let-critere pTemplate="item">
+                                        <div>{{critere.crt_nom}}</div>
+                                    </ng-template>
+                                </p-pickList>
+                            </div>
+                        </ng-template>
+            
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="saveTarifBagage2(tarifBagagesEdit.cat_id)"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteCritereDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                        </ng-template>
+                    </p-dialog>
+            
+                    <p-dialog [(visible)]="deleteCriteresDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                            <span>Are you sure you want to delete selected products?</span>
+                        </div>
+                        <ng-template pTemplate="footer">
+                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                        </ng-template>
+                    </p-dialog>
+                </div>
+            </div>
+            </p-tabPanel>
+            <p-tabPanel header="Affichage" class="line-height-3 m-0">                
+                <div class="grid">
+                    <div class="col-12">
+                        <div class="">
+                            <p-toast></p-toast>
+                            <p-toolbar styleClass="mb-4">
+                                <ng-template pTemplate="left">
+                                    <div class="my-2">
+                                        <button pButton pRipple label="Ajouter un nouveau groupe de critères" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNewGrpCrt()"></button>
+                                        </div>
+                                </ng-template>
+            
+                            </p-toolbar>
+                
+                            <p-table #dt [value]="groupeCriteres" [columns]="cols2" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} entrées" [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                                <ng-template pTemplate="caption">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                        <h5 class="m-0">Gestion des groupes de critères</h5>
+                                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Rechercher..."  class="w-full sm:w-auto"/>
+                                        </span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="catNom">Intitulé</th>
+                                        <th pSortableColumn="criteres">Critères</th>
+                                        <th pSortableColumn="catPrixTtc">Rendre dispo en ligne ?</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-grpcrt>
+                                    <tr>
+                                        <td style="width:20%; min-width:10rem;">
+                                            {{ grpcrt.grpcrt_nom || 'Pas de données' }}
+                                        </td>                                      
+                                        <td style="width:30%; min-width:8rem;">
+                                           
+                                                <span *ngFor="let critere of grpcrt.criteres" style="display: inline-block; margin-right: 3px; margin-bottom: 3px;">
+                                                    <p-tag icon="pi pi-info-circle" severity="info" value="{{critere.crt_nom || getCritereById(critere)}}" />
+                                                </span>
+                                     
+                                        </td>                                          
+                                        <td style="width:15%; min-width:10rem;">
+                                            <span>{{ grpcrt.on_line ? 'OUI' : 'NON' }}</span>
+                                          </td>
+                                        <td>
+                                            <div class="flex">
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-warning mr-2" (click)="modifGroupeCrt(grpcrt)">
+                                                    <i class="pi pi-pencil" style="margin-right: 8px;"></i>Editer
+                                                </button>   
+                                                <button pButton pRipple iconPos="left" class="p-button-rounded p-button-help mr-2" >
+                                                    <i class="pi pi-eject" style="margin-right: 8px;"></i>Archiver
+                                                </button> 
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                
+                        <p-dialog [(visible)]="groupeCrtDialog" [style]="{width: '600px'}" header="Creer un groupe d'affichage" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Intitulé du groupe</label>
+                                    <input type="text" pInputText id="catNom" [(ngModel)]="groupecritereCreate.grpcrtNom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !catNom">Name is required.</small>
+                                </div>
+
+                                <div class="">
+                                    <p-pickList [source]="criteres" [target]="targetCriteria" sourceHeader="Critères" targetHeader="Choix" dragdrop="true"
+                                                [responsive]="true" [sourceStyle]="{'height':'200px'}" [targetStyle]="{'height':'200px'}">
+                                        <ng-template let-critere pTemplate="item">
+                                            <div>{{critere.crt_nom}}</div>
+                                        </ng-template>
+                                    </p-pickList>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="savegroupeCritere()"></button>
+                            </ng-template>
+                        </p-dialog>
+
+                        <p-dialog [(visible)]="groupeCrtEdit" [style]="{width: '600px'}" header="Modifier les infos. d'un groupe d'affichage" [modal]="true" class="p-fluid">
+                            <ng-template pTemplate="content">
+                                <div class="field">
+                                    <label for="name">Intitulé du groupe</label>
+                                    <input type="text" pInputText id="catNom" [(ngModel)]="groupecritereEdit.grpcrt_nom" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product.name}"/>
+                                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !catNom">Name is required.</small>
+                                </div>
+
+                                <div class="field">
+                                    <label class="mb-3">Ce groupe de critères doit-il être accessible pour les places en ligne ?</label>
+                                    <div class="formgrid grid">
+                                        <div class="field-radiobutton col-6">
+                                            <p-radioButton [value]=1 [(ngModel)]="groupecritereEdit.on_line"></p-radioButton>
+                                            <label for="Oui">Oui</label>
+                                        </div>
+                                        <div class="field-radiobutton col-6">
+                                            <p-radioButton [value]=0 [(ngModel)]="groupecritereEdit.on_line"></p-radioButton>
+                                            <label for="Non">Non</label>
+                                        </div>
+                                       
+                                    </div>
+                                </div>
+
+                                <div class="">
+                                    <p-pickList [source]="criteriaForEdit3" [target]="targetGroupeCriteria" sourceHeader="Critères" targetHeader="Choix" dragdrop="true"
+                                                [responsive]="true" [sourceStyle]="{'height':'200px'}" [targetStyle]="{'height':'200px'}">
+                                        <ng-template let-critere pTemplate="item">
+                                            <div>{{critere.crt_nom}}</div>
+                                        </ng-template>
+                                    </p-pickList>
+                                </div>
+                            </ng-template>
+                
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple label="Valider" icon="pi pi-check" class="p-button-text" (click)="savegroupeCritere2(groupecritereEdit.grpcrt_id)"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteCritereDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span *ngIf="product">Are you sure you want to delete <b>{{product.name}}</b>?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+                            </ng-template>
+                        </p-dialog>
+                
+                        <p-dialog [(visible)]="deleteCriteresDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                            <div class="flex align-items-center justify-content-center">
+                                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                <span>Are you sure you want to delete selected products?</span>
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteProductsDialog = false"></button>
+                                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+                            </ng-template>
+                        </p-dialog>
+                    </div>
+            </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>
