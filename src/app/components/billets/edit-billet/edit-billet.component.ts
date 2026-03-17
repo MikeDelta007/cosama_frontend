@@ -683,7 +683,6 @@ export class EditBilletComponent implements OnInit {
 
         printBillet(billet: Billet) {
             this.billet = { ...billet };
-            console.log("BILLET" + this.billet);
             this.billetService.generateQRCode(billet.bilCode).subscribe({
                 next: (data: string) => {
                   this.qrCodeUrl = this.sanitizer.bypassSecurityTrustUrl(data);
@@ -1370,6 +1369,7 @@ export class EditBilletComponent implements OnInit {
           }  
 
         
+
         if (!this.passager.billetsDTOS.criteres || (this.passager.billetsDTOS.criteres.filter(critere => critere !== null && critere !== undefined).length) < 2)
           {
             this.messageService.add({ severity: 'warn', summary: 'SILECS', detail: 'Veuillez bien remplir les critères', life: 3000 });
